@@ -10,7 +10,6 @@ dependencies:
   hex: ^0.2.0
   gbk_codec: ^0.4.0
   image: ^3.0.2
-  intl: any
   resource_portable: ^3.0.2
 
 dev_dependencies:
@@ -18,3 +17,4 @@ dev_dependencies:
   test: ^1.21.0
   dependency_validator: ^3.2.2
   coverage: ^1.6.3
+  intl: any
