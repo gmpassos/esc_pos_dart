@@ -1,0 +1,18 @@
+name: esc_pos_dart
+description: ESC/POS thermal WiFi printer support for Dart (non-Flutter dependent).
+version: 1.0.0
+repository: https://github.com/gmpassos/esc_pos_dart
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  hex: ^0.2.0
+  gbk_codec: ^0.4.0
+  image: ^3.0.2
+  intl: any
+  resource_portable: ^3.0.2
+
+dev_dependencies:
+  lints: ^2.0.0
+  test: ^1.21.0
