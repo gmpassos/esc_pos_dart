@@ -29,19 +29,19 @@ jobs:
         run: dart test --platform vm
       #      - name: dartdoc
       #        run: dartdoc --no-generate-docs
-      - name: Generate coverage report
-        run: |
-          dart pub global activate coverage
-          dart run test --coverage=./coverage
-          dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          directory: ./coverage/
-          flags: unittests
-          env_vars: OS,DART
-          fail_ci_if_error: true
-          verbose: true
+#      - name: Generate coverage report
+#        run: |
+#          dart pub global activate coverage
+#          dart run test --coverage=./coverage
+#          dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v1
+#        with:
+#          directory: ./coverage/
+#          flags: unittests
+#          env_vars: OS,DART
+#          fail_ci_if_error: true
+#          verbose: true
       - name: dart pub publish --dry-run
         run: dart pub publish --dry-run
 
