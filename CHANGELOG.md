@@ -1,3 +1,7 @@
+## 1.0.1
+
+- New `PrinterDocument`.
+
 ## 1.0.0
 
 - Dart pure version:
