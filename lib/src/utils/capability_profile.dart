@@ -26,7 +26,7 @@ class CapabilityProfile {
   /// Public factory
   static Future<CapabilityProfile> load({String name = 'default'}) async {
     final content =
-        await Resource('package:esc_pos_utils/resources/capabilities.json')
+        await Resource('package:esc_pos_dart/resources/capabilities.json')
             .readAsString();
     Map capabilities = json.decode(content);
 
@@ -55,7 +55,7 @@ class CapabilityProfile {
 
   static Future<List<dynamic>> getAvailableProfiles() async {
     final content =
-        await Resource('package:esc_pos_utils/resources/capabilities.json')
+        await Resource('package:esc_pos_dart/resources/capabilities.json')
             .readAsString();
     Map capabilities = json.decode(content);
 

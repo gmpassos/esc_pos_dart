@@ -31,7 +31,7 @@ Future<void> main(List<String> args) async {
 Future<bool> printDemoReceipt(NetworkPrinter printer) async {
   // Print image
   final bytes =
-      await Resource('package:esc_pos_utils/resources/rabbit_black.jpg')
+      await Resource('package:esc_pos_dart/resources/rabbit_black.jpg')
           .readAsBytes();
   final image = decodeImage(bytes)!;
 

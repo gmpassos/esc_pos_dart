@@ -1,3 +1,9 @@
+## 1.0.2
+
+- Added `PrinterCommand.toString`.
+- Fixed load of resource: `package:esc_pos_dart/resources/capabilities.json`.
+- collection: ^1.17.2
+
 ## 1.0.1
 
 - New `PrinterDocument`.

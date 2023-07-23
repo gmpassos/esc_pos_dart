@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:esc_pos_dart/esc_pos_dart.dart';
 import 'package:image/image.dart';
 
@@ -49,6 +50,28 @@ class PrinterDocument {
   Map<String, dynamic> toJson() => {
         'commands': commands.map((e) => e.toJson()).toList(),
       };
+
+  @override
+  String toString() {
+    var lines = commands.map((e) => e.toString()).toList();
+
+    var maxLine =
+        lines.map((e) => e.replaceAll('\n', '').trimRight().length).max;
+
+    if (maxLine > 10) {
+      var hr = '${'-' * 10}\n';
+      var hrFull = '${'-' * maxLine}\n';
+
+      for (var i = 0; i < lines.length; ++i) {
+        var l = lines[i];
+        if (l == hr) {
+          lines[i] = hrFull;
+        }
+      }
+    }
+
+    return lines.join();
+  }
 }
 
 enum PrinterCommandType {
@@ -206,6 +229,9 @@ abstract class PrinterCommand {
   void print(NetworkPrinter printer);
 
   Map<String, dynamic> toJson();
+
+  @override
+  String toString();
 }
 
 class PrinterCommandText extends PrinterCommand {
@@ -235,6 +261,9 @@ class PrinterCommandText extends PrinterCommand {
         'text': text,
         if (style != null && !style!.isDefault) 'style': style!.toJson(),
       };
+
+  @override
+  String toString() => '$text\n';
 }
 
 class PrinterCommandHR extends PrinterCommand {
@@ -263,6 +292,12 @@ class PrinterCommandHR extends PrinterCommand {
         if (ch != null) 'ch': ch,
         if (linesAfter != null) 'linesAfter': linesAfter,
       };
+
+  @override
+  String toString() {
+    var ch = this.ch ?? '-';
+    return '${ch * 10}\n';
+  }
 }
 
 class PrinterCommandColumn extends PrinterCommand {
@@ -302,6 +337,9 @@ class PrinterCommandColumn extends PrinterCommand {
       text: text,
       width: width,
       styles: style?.toPosStyles() ?? const PosStyles());
+
+  @override
+  String toString() => text;
 }
 
 class PrinterCommandRow extends PrinterCommand {
@@ -328,6 +366,9 @@ class PrinterCommandRow extends PrinterCommand {
         'type': type.name,
         'columns': columns.map((e) => e.toJson()).toList(),
       };
+
+  @override
+  String toString() => '${columns.join('\t')}\n';
 }
 
 class PrinterCommandFeed extends PrinterCommand {
@@ -348,6 +389,9 @@ class PrinterCommandFeed extends PrinterCommand {
 
   @override
   Map<String, dynamic> toJson() => {'type': type.name, 'n': n};
+
+  @override
+  String toString() => '\n' * n;
 }
 
 class PrinterCommandCut extends PrinterCommand {
@@ -369,6 +413,9 @@ class PrinterCommandCut extends PrinterCommand {
 
   @override
   Map<String, dynamic> toJson() => {'type': type.name, 'full': full};
+
+  @override
+  String toString() => '-.-\n';
 }
 
 class PrinterCommandImage extends PrinterCommand {
@@ -415,4 +462,8 @@ class PrinterCommandImage extends PrinterCommand {
         'align': align,
         'image': toPNGBase64(),
       };
+
+  @override
+  String toString() =>
+      '(image width=${image.width} height=${image.height} align="$align" type="${type.name}")\n';
 }
