@@ -184,5 +184,10 @@ class NetworkPrinter {
       maxCharsPerLine: maxCharsPerLine,
     ));
   }
+
+  void transmissionOfStatus() {
+
+  }
+
   // ************************ (end) Printer Commands ************************
 }

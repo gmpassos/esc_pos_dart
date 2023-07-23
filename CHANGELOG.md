@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Added support to command `GS r` (transmission of status).
+
 ## 1.0.2
 
 - Added `PrinterCommand.toString`.
