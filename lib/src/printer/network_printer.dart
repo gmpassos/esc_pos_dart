@@ -6,6 +6,7 @@
  * See LICENSE for distribution and usage details.
  */
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 import 'package:esc_pos_dart/esc_pos_utils.dart';
@@ -27,9 +28,14 @@ class NetworkPrinter {
   late Socket _socket;
 
   int? get port => _port;
+
   String? get host => _host;
+
   PaperSize get paperSize => _paperSize;
+
   CapabilityProfile get profile => _profile;
+
+  final List<int> _inputBytes = <int>[];
 
   Future<PosPrintResult> connect(String host,
       {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
@@ -37,6 +43,7 @@ class NetworkPrinter {
     _port = port;
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
+      _socket.listen(_addInputBytes);
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
@@ -45,11 +52,50 @@ class NetworkPrinter {
   }
 
   /// [delayMs]: milliseconds to wait after destroying the socket
+
   void disconnect({int? delayMs}) async {
     _socket.destroy();
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
+    _disposeInputBytes();
+  }
+
+  void _disposeInputBytes() {
+    _inputBytes.clear();
+  }
+
+  void _addInputBytes(Uint8List bs) {
+    _inputBytes.addAll(bs);
+    _notifyInputBytes();
+  }
+
+  void _notifyInputBytes() {
+    var completer = _waitingBytes;
+    if (completer != null && !completer.isCompleted) {
+      _waitingBytes = null;
+      completer.complete(true);
+    }
+  }
+
+  Completer<bool>? _waitingBytes;
+
+  Future<bool> _waitInputByte() {
+    var completer = _waitingBytes;
+    if (completer != null) {
+      return completer.future;
+    }
+
+    completer = _waitingBytes = Completer<bool>();
+
+    var future = completer.future.then((ok) {
+      if (identical(_waitingBytes, completer)) {
+        _waitingBytes = null;
+      }
+      return ok;
+    });
+
+    return future;
   }
 
   // ************************ Printer Commands ************************
@@ -185,9 +231,14 @@ class NetworkPrinter {
     ));
   }
 
-  void transmissionOfStatus() {
+  Future<int?> transmissionOfStatus({int n = 1}) async {
+    var waitFuture = _waitInputByte();
+    _socket.add(_generator.transmissionOfStatus(n: n));
+    await waitFuture;
 
+    var status = _inputBytes.lastOrNull;
+    return status;
   }
 
-  // ************************ (end) Printer Commands ************************
+// ************************ (end) Printer Commands ************************
 }

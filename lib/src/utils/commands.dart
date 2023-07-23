@@ -18,6 +18,9 @@ const cBeep = '${esc}B'; // Beeper [count] [duration]
 const cCutFull = '${gs}V0'; // Full cut
 const cCutPart = '${gs}V1'; // Partial cut
 
+// Transmission of Status
+const cTransmissionOfStatus = '${gs}r'; // Full cut
+
 // Character
 const cReverseOn = '${gs}B\x01'; // Turn white/black reverse print mode on
 const cReverseOff = '${gs}B\x00'; // Turn white/black reverse print mode off

@@ -406,6 +406,17 @@ class Generator {
     return bytes;
   }
 
+  /// Request transmission of printer status.
+  List<int> transmissionOfStatus({int n = 1}) {
+    List<int> bytes = [];
+    if (n >= 0 && n <= 255) {
+      bytes += Uint8List.fromList(
+        List.from(cTransmissionOfStatus.codeUnits)..add(n),
+      );
+    }
+    return bytes;
+  }
+
   /// Print selected code table.
   ///
   /// If [codeTable] is null, global code table is used.
