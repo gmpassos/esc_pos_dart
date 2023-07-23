@@ -237,6 +237,10 @@ class NetworkPrinter {
     await waitFuture;
 
     var status = _inputBytes.lastOrNull;
+    if (status != null) {
+      // Remove reserved bits:
+      status = status & 0x0F;
+    }
     return status;
   }
 

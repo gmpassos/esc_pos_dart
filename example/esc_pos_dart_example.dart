@@ -23,12 +23,43 @@ Future<void> main(List<String> args) async {
 
   print('-- Printer connection: $res');
 
-  var printOK = await printDemoReceipt(printer);
+  var printOK1 = await printHelloWorld(printer);
+  print('-- Print(1) finished: ${printOK1 ? 'OK' : 'FAIL'}');
 
-  print('-- Print status: ${printOK ? 'OK' : 'FAIL'}');
+  var printOK2 = await printDemoReceipt(printer);
+  print('-- Print(2) finished: ${printOK2 ? 'OK' : 'FAIL'}');
+}
+
+Future<bool> printHelloWorld(NetworkPrinter printer) async {
+  print('-----------------------------------------------------------------');
+  print('** Printing Hello World:');
+
+  printer.feed(1);
+
+  printer.hr();
+  printer.text('Hello', styles: PosStyles(align: PosAlign.left));
+  printer.text('World!', styles: PosStyles(align: PosAlign.right));
+  printer.hr();
+
+  printer.feed(1);
+  printer.cut();
+  printer.feed(1);
+
+  print('-- Requesting printer status...');
+
+  var status = await printer.transmissionOfStatus();
+
+  print('-- Printer status: $status');
+
+  printer.disconnect(delayMs: 300);
+
+  return true;
 }
 
 Future<bool> printDemoReceipt(NetworkPrinter printer) async {
+  print('-----------------------------------------------------------------');
+  print('** Printing demo receipt:');
+
   // Print image
   final bytes =
       await Resource('package:esc_pos_dart/resources/rabbit_black.jpg')
