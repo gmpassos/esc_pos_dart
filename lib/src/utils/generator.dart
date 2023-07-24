@@ -234,6 +234,13 @@ class Generator {
     return bytes;
   }
 
+  /// Ends printer job.
+  List<int> endJob() {
+    List<int> bytes = [];
+    bytes += cEndJob.codeUnits;
+    return bytes;
+  }
+
   /// Set global code table which will be used instead of the default printer's code table
   /// (even after resetting)
   List<int> setGlobalCodeTable(String? codeTable) {
@@ -402,6 +409,17 @@ class Generator {
       bytes += cCutPart.codeUnits;
     } else {
       bytes += cCutFull.codeUnits;
+    }
+    return bytes;
+  }
+
+  /// Request transmission of printer status.
+  List<int> transmissionOfStatus({int n = 1}) {
+    List<int> bytes = [];
+    if (n >= 0 && n <= 255) {
+      bytes += Uint8List.fromList(
+        List.from(cTransmissionOfStatus.codeUnits)..add(n),
+      );
     }
     return bytes;
   }

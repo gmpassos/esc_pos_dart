@@ -1,11 +1,13 @@
 /*
  * esc_pos_printer
  * Created by Andrey Ushakov
- * 
+ * Improved by Graciliano M. Passos.
+ *
  * Copyright (c) 2019-2020. All rights reserved.
  * See LICENSE for distribution and usage details.
  */
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 import 'package:esc_pos_dart/esc_pos_utils.dart';
@@ -14,30 +16,62 @@ import 'enums.dart';
 
 /// Network Printer
 class NetworkPrinter {
-  NetworkPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5}) {
-    _generator =
-        Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
-  }
-
   final PaperSize _paperSize;
   final CapabilityProfile _profile;
+
+  late final Generator _generator;
+
+  NetworkPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5})
+      : _generator =
+            Generator(_paperSize, _profile, spaceBetweenRows: spaceBetweenRows);
+
+  PaperSize get paperSize => _paperSize;
+
+  CapabilityProfile get profile => _profile;
+
   String? _host;
+
+  String? get host => _host;
+
   int? _port;
-  late Generator _generator;
-  late Socket _socket;
 
   int? get port => _port;
-  String? get host => _host;
-  PaperSize get paperSize => _paperSize;
-  CapabilityProfile get profile => _profile;
+
+  late Socket _socket;
+  final List<int> _inputBytes = <int>[];
+
+  bool _connected = false;
+
+  bool get isConnected => _connected;
 
   Future<PosPrintResult> connect(String host,
       {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
     _host = host;
     _port = port;
+
+    return await ensureConnected(timeout: timeout);
+  }
+
+  Future<PosPrintResult> ensureConnected(
+      {Duration timeout = const Duration(seconds: 5)}) async {
+    if (_connected) {
+      return PosPrintResult.success;
+    }
+
     try {
+      var host = _host;
+      var port = _port;
+
+      if (host == null || port == null) {
+        throw StateError("Call `connect` first to define `host` and `port`!");
+      }
+
       _socket = await Socket.connect(host, port, timeout: timeout);
+      _connected = true;
+
+      _socket.listen(_addInputBytes);
       _socket.add(_generator.reset());
+
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
       return Future<PosPrintResult>.value(PosPrintResult.timeout);
@@ -45,16 +79,60 @@ class NetworkPrinter {
   }
 
   /// [delayMs]: milliseconds to wait after destroying the socket
+
   void disconnect({int? delayMs}) async {
     _socket.destroy();
+    _connected = false;
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
+    _disposeInputBytes();
+  }
+
+  void _disposeInputBytes() {
+    _inputBytes.clear();
+  }
+
+  void _addInputBytes(Uint8List bs) {
+    _inputBytes.addAll(bs);
+    _notifyInputBytes();
+  }
+
+  void _notifyInputBytes() {
+    var completer = _waitingBytes;
+    if (completer != null && !completer.isCompleted) {
+      _waitingBytes = null;
+      completer.complete(true);
+    }
+  }
+
+  Completer<bool>? _waitingBytes;
+
+  Future<bool> _waitInputByte() {
+    var completer = _waitingBytes;
+    if (completer != null) {
+      return completer.future;
+    }
+
+    completer = _waitingBytes = Completer<bool>();
+
+    var future = completer.future.then((ok) {
+      if (identical(_waitingBytes, completer)) {
+        _waitingBytes = null;
+      }
+      return ok;
+    });
+
+    return future;
   }
 
   // ************************ Printer Commands ************************
   void reset() {
     _socket.add(_generator.reset());
+  }
+
+  void endJob() {
+    _socket.add(_generator.endJob());
   }
 
   void text(
@@ -184,5 +262,19 @@ class NetworkPrinter {
       maxCharsPerLine: maxCharsPerLine,
     ));
   }
-  // ************************ (end) Printer Commands ************************
+
+  Future<int?> transmissionOfStatus({int n = 1}) async {
+    var waitFuture = _waitInputByte();
+    _socket.add(_generator.transmissionOfStatus(n: n));
+    await waitFuture;
+
+    var status = _inputBytes.lastOrNull;
+    if (status != null) {
+      // Remove reserved bits:
+      status = status & 0x0F;
+    }
+    return status;
+  }
+
+// ************************ (end) Printer Commands ************************
 }

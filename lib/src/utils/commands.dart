@@ -8,15 +8,20 @@
 
 const esc = '\x1B';
 const gs = '\x1D';
+const ff = '\x0C';
 const fs = '\x1C';
 
 // Miscellaneous
 const cInit = '$esc@'; // Initialize printer
 const cBeep = '${esc}B'; // Beeper [count] [duration]
+const cEndJob = ff; // Initialize printer
 
 // Mech. Control
 const cCutFull = '${gs}V0'; // Full cut
 const cCutPart = '${gs}V1'; // Partial cut
+
+// Transmission of Status
+const cTransmissionOfStatus = '${gs}r'; // Full cut
 
 // Character
 const cReverseOn = '${gs}B\x01'; // Turn white/black reverse print mode on
