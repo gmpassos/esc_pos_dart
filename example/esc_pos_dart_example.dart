@@ -26,6 +26,8 @@ Future<void> main(List<String> args) async {
   var printOK1 = await printHelloWorld(printer);
   print('-- Print(1) finished: ${printOK1 ? 'OK' : 'FAIL'}');
 
+  await printer.ensureConnected();
+
   var printOK2 = await printDemoReceipt(printer);
   print('-- Print(2) finished: ${printOK2 ? 'OK' : 'FAIL'}');
 }

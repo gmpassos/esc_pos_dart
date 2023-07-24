@@ -1,7 +1,8 @@
 ## 1.0.3
 
-- Added support to command `GS r` (transmission of status).
+- Added support to optional command `GS r` (transmission of status).
 - Added `end job` command.
+- Added `NetworkPrinter.ensureConnected`.
 
 ## 1.0.2
 

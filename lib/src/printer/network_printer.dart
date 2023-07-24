@@ -1,7 +1,8 @@
 /*
  * esc_pos_printer
  * Created by Andrey Ushakov
- * 
+ * Improved by Graciliano M. Passos.
+ *
  * Copyright (c) 2019-2020. All rights reserved.
  * See LICENSE for distribution and usage details.
  */
@@ -15,36 +16,62 @@ import 'enums.dart';
 
 /// Network Printer
 class NetworkPrinter {
-  NetworkPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5}) {
-    _generator =
-        Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
-  }
-
   final PaperSize _paperSize;
   final CapabilityProfile _profile;
-  String? _host;
-  int? _port;
-  late Generator _generator;
-  late Socket _socket;
 
-  int? get port => _port;
+  late final Generator _generator;
 
-  String? get host => _host;
+  NetworkPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5})
+      : _generator =
+            Generator(_paperSize, _profile, spaceBetweenRows: spaceBetweenRows);
 
   PaperSize get paperSize => _paperSize;
 
   CapabilityProfile get profile => _profile;
 
+  String? _host;
+
+  String? get host => _host;
+
+  int? _port;
+
+  int? get port => _port;
+
+  late Socket _socket;
   final List<int> _inputBytes = <int>[];
+
+  bool _connected = false;
+
+  bool get isConnected => _connected;
 
   Future<PosPrintResult> connect(String host,
       {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
     _host = host;
     _port = port;
+
+    return await ensureConnected(timeout: timeout);
+  }
+
+  Future<PosPrintResult> ensureConnected(
+      {Duration timeout = const Duration(seconds: 5)}) async {
+    if (_connected) {
+      return PosPrintResult.success;
+    }
+
     try {
+      var host = _host;
+      var port = _port;
+
+      if (host == null || port == null) {
+        throw StateError("Call `connect` first to define `host` and `port`!");
+      }
+
       _socket = await Socket.connect(host, port, timeout: timeout);
+      _connected = true;
+
       _socket.listen(_addInputBytes);
       _socket.add(_generator.reset());
+
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
       return Future<PosPrintResult>.value(PosPrintResult.timeout);
@@ -55,6 +82,7 @@ class NetworkPrinter {
 
   void disconnect({int? delayMs}) async {
     _socket.destroy();
+    _connected = false;
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
