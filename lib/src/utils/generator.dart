@@ -234,6 +234,13 @@ class Generator {
     return bytes;
   }
 
+  /// Ends printer job.
+  List<int> endJob() {
+    List<int> bytes = [];
+    bytes += cEndJob.codeUnits;
+    return bytes;
+  }
+
   /// Set global code table which will be used instead of the default printer's code table
   /// (even after resetting)
   List<int> setGlobalCodeTable(String? codeTable) {

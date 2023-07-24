@@ -45,11 +45,7 @@ Future<bool> printHelloWorld(NetworkPrinter printer) async {
   printer.cut();
   printer.feed(1);
 
-  print('-- Requesting printer status...');
-
-  var status = await printer.transmissionOfStatus();
-
-  print('-- Printer status: $status');
+  printer.endJob();
 
   printer.disconnect(delayMs: 300);
 
@@ -178,6 +174,9 @@ Future<bool> printDemoReceipt(NetworkPrinter printer) async {
 
   printer.feed(1);
   printer.cut();
+  printer.feed(1);
+
+  printer.endJob();
 
   printer.disconnect(delayMs: 300);
 

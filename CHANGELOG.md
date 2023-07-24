@@ -1,6 +1,7 @@
 ## 1.0.3
 
 - Added support to command `GS r` (transmission of status).
+- Added `end job` command.
 
 ## 1.0.2
 
