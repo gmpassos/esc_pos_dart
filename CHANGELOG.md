@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Fix `NetworkPrinter.disconnect` delay.
+
 ## 1.0.3
 
 - Added support to optional command `GS r` (transmission of status).

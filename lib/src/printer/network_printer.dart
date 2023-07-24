@@ -78,14 +78,15 @@ class NetworkPrinter {
     }
   }
 
+  /// Closes the printer [Socket] and disposes any received byte in buffer.
   /// [delayMs]: milliseconds to wait after destroying the socket
-
-  void disconnect({int? delayMs}) async {
-    _socket.destroy();
-    _connected = false;
-    if (delayMs != null) {
-      await Future.delayed(Duration(milliseconds: delayMs), () => null);
+  Future<void> disconnect({int? delayMs}) async {
+    if (delayMs != null && delayMs > 0) {
+      await Future.delayed(Duration(milliseconds: delayMs));
     }
+
+    _connected = false;
+    _socket.destroy();
     _disposeInputBytes();
   }
 
