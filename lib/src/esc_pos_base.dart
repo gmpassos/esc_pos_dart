@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:esc_pos_dart/esc_pos_dart.dart';
 import 'package:image/image.dart';
+
+import 'printer/network_printer.dart';
+import 'utils/enums.dart';
+import 'utils/pos_column.dart';
+import 'utils/pos_styles.dart';
 
 /// An ESC/POS printer document.
 /// See [NetworkPrinter].

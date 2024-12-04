@@ -10,8 +10,16 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
-import 'package:esc_pos_dart/esc_pos_utils.dart';
+
 import 'package:image/image.dart';
+
+import '../utils/barcode.dart';
+import '../utils/capability_profile.dart';
+import '../utils/enums.dart';
+import '../utils/generator.dart';
+import '../utils/pos_column.dart';
+import '../utils/pos_styles.dart';
+import '../utils/qrcode.dart';
 import 'enums.dart';
 
 /// Network Printer

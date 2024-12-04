@@ -6,8 +6,8 @@
  * See LICENSE for distribution and usage details.
  */
 
-import 'package:esc_pos_dart/src/utils/commands.dart';
-import 'dart:convert';
+import 'char_encoder.dart';
+import 'commands.dart';
 
 class QRSize {
   const QRSize(this.value);
@@ -54,7 +54,7 @@ class QRCode {
     bytes += cQrHeader.codeUnits + [0x03, 0x00, 0x31, 0x45] + [level.value];
 
     // FN 180. QR Code: Store the data in the symbol storage area
-    List<int> textBytes = latin1.encode(text);
+    List<int> textBytes = encodeChars(text);
     // pL pH cn fn m
     bytes +=
         cQrHeader.codeUnits + [textBytes.length + 3, 0x00, 0x31, 0x50, 0x30];

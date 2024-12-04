@@ -6,15 +6,20 @@
  * See LICENSE for distribution and usage details.
  */
 
-import 'dart:convert';
 import 'dart:typed_data' show Uint8List;
 
-import 'package:esc_pos_dart/esc_pos_utils.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'package:hex/hex.dart';
 import 'package:image/image.dart';
 
+import 'barcode.dart';
+import 'capability_profile.dart';
+import 'char_encoder.dart';
 import 'commands.dart';
+import 'enums.dart';
+import 'pos_column.dart';
+import 'pos_styles.dart';
+import 'qrcode.dart';
 
 class Generator {
   Generator(this._paperSize, this._profile, {this.spaceBetweenRows = 5});
