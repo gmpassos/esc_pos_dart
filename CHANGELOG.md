@@ -1,3 +1,15 @@
+## 1.0.5
+
+- image: ^3.3.0
+- resource_portable: ^3.1.0
+- collection: ^1.18.0
+
+- lints: ^4.0.0
+- test: ^1.25.11
+- dependency_validator: ^3.2.3
+- coverage: ^1.11.0
+- intl: ^0.20.1
+
 ## 1.0.4
 
 - Fix `NetworkPrinter.disconnect` delay.
