@@ -82,7 +82,7 @@ class Generator {
         .replaceAll(" ", ' ')
         .replaceAll("•", '.');
     if (!isKanji) {
-      return latin1.encode(text);
+      return encodeChars(text);
     } else {
       return Uint8List.fromList(gbk_bytes.encode(text));
     }
@@ -276,7 +276,7 @@ class Generator {
   List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
     List<int> bytes = [];
     if (styles.align != _styles.align) {
-      bytes += latin1.encode(styles.align == PosAlign.left
+      bytes += encodeChars(styles.align == PosAlign.left
           ? cAlignLeft
           : (styles.align == PosAlign.center ? cAlignCenter : cAlignRight));
       _styles = _styles.copyWith(align: styles.align);

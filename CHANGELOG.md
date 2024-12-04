@@ -1,5 +1,9 @@
 ## 1.0.5
 
+- New `encodeChars`, to avoid encoding errors.
+
+- Optimize imports.
+
 - image: ^3.3.0
 - resource_portable: ^3.1.0
 - collection: ^1.18.0
