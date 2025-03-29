@@ -1,5 +1,4 @@
 import 'package:esc_pos_dart/esc_pos_dart.dart';
-import 'package:esc_pos_dart/src/printer/generic_printer.dart';
 import 'package:image/image.dart';
 import 'package:test/test.dart';
 
