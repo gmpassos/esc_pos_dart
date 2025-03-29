@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:image/image.dart';
 
+import 'printer/generic_printer.dart';
 import 'printer/network_printer.dart';
 import 'utils/enums.dart';
 import 'utils/pos_column.dart';
@@ -45,7 +46,7 @@ class PrinterDocument {
   PrinterCommand addImage(Image image, {String align = 'center'}) =>
       addCommand(PrinterCommandImage(image, align: align));
 
-  void print(NetworkPrinter printer) {
+  void print(GenericPrinter printer) {
     for (var c in commands) {
       c.print(printer);
     }
@@ -223,14 +224,12 @@ abstract class PrinterCommand {
         return PrinterCommandCut.fromJson(j);
       case PrinterCommandType.image:
         return PrinterCommandImage.fromJson(j);
-      default:
-        throw ArgumentError("Unknown type");
     }
   }
 
   PrinterCommandType get type;
 
-  void print(NetworkPrinter printer);
+  void print(GenericPrinter printer);
 
   Map<String, dynamic> toJson();
 
@@ -256,7 +255,7 @@ class PrinterCommandText extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.text;
 
   @override
-  void print(NetworkPrinter printer) =>
+  void print(GenericPrinter printer) =>
       printer.text(text, styles: style?.toPosStyles() ?? const PosStyles());
 
   @override
@@ -285,7 +284,7 @@ class PrinterCommandHR extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.hr;
 
   @override
-  void print(NetworkPrinter printer) => printer.hr(
+  void print(GenericPrinter printer) => printer.hr(
         ch: ch ?? '-',
         linesAfter: linesAfter ?? 0,
       );
@@ -326,7 +325,7 @@ class PrinterCommandColumn extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.column;
 
   @override
-  void print(NetworkPrinter printer) => throw UnsupportedError(
+  void print(GenericPrinter printer) => throw UnsupportedError(
       "No a printer command. Should be used as a row parameter.");
 
   @override
@@ -362,7 +361,7 @@ class PrinterCommandRow extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.row;
 
   @override
-  void print(NetworkPrinter printer) =>
+  void print(GenericPrinter printer) =>
       printer.row(columns.map((e) => e.toPosColumn()).toList());
 
   @override
@@ -389,7 +388,7 @@ class PrinterCommandFeed extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.feed;
 
   @override
-  void print(NetworkPrinter printer) => printer.feed(n);
+  void print(GenericPrinter printer) => printer.feed(n);
 
   @override
   Map<String, dynamic> toJson() => {'type': type.name, 'n': n};
@@ -412,7 +411,7 @@ class PrinterCommandCut extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.cut;
 
   @override
-  void print(NetworkPrinter printer) =>
+  void print(GenericPrinter printer) =>
       printer.cut(mode: full ? PosCutMode.full : PosCutMode.partial);
 
   @override
@@ -448,7 +447,7 @@ class PrinterCommandImage extends PrinterCommand {
   PrinterCommandType get type => PrinterCommandType.image;
 
   @override
-  void print(NetworkPrinter printer) => printer.image(image,
+  void print(GenericPrinter printer) => printer.image(image,
       align: PosAlign.values.firstWhere((e) => e.name == align));
 
   Uint8List toPNG() {

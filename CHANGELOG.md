@@ -1,3 +1,16 @@
+## 1.0.6
+
+🚀 Refactor: Refactor `NetworkPrinter` into `GenericPrinter` class.
+🚀 New `BytesPrinter`.
+
+- sdk: ^3.6.0
+
+- resource_portable: ^3.1.2
+
+- test: ^1.25.15
+- coverage: ^1.11.1
+- intl: ^0.20.2
+
 ## 1.0.5
 
 - New `encodeChars`, to avoid encoding errors.
