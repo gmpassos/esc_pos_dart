@@ -41,13 +41,11 @@ class GeneratorEscP extends Generator {
 
   // ************************ Command Generators ************************
 
-  /// Resets the printer
   @override
   List<int> reset() {
     return _wrapCommand('\x1B@'); // ESC @
   }
 
-  /// Sets the default font type
   List<int> setFont(PosFontType fontType) {
     globalFont = fontType;
 
@@ -78,16 +76,10 @@ class GeneratorEscP extends Generator {
     return bytes;
   }
 
-  /// Sets text alignment
-  ///
-  /// 0: Left alignment
-  /// 1: Center alignment
-  /// 2: Right alignment
   List<int> setAlignment(int align) {
     return _wrapCommand('\x1Bt${align.toRadixString(16)}');
   }
 
-  /// Prints a single line of text
   @override
   List<int> text(
     String text, {
@@ -106,7 +98,6 @@ class GeneratorEscP extends Generator {
     return bytes;
   }
 
-  /// Prints empty lines
   @override
   List<int> emptyLines(int n) {
     var bytes = <int>[];
@@ -116,16 +107,11 @@ class GeneratorEscP extends Generator {
     return bytes;
   }
 
-  /// Feeds (advances) paper by a specified number of lines
   @override
   List<int> feed(int lines) {
     return _wrapCommand('\x1BJ${lines.toRadixString(16)}');
   }
 
-  /// Cuts the paper (if supported by the printer)
-  ///
-  /// 0: Full cut
-  /// 1: Partial cut
   @override
   List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 5}) {
     var bytes = emptyLines(extraLines);
@@ -138,9 +124,6 @@ class GeneratorEscP extends Generator {
     return bytes;
   }
 
-  /// Prints rasterized images
-  ///
-  /// Images should be in black/white or grayscale format.
   @override
   List<int> imageRaster(
     Image image, {
@@ -175,7 +158,6 @@ class GeneratorEscP extends Generator {
     return bytes;
   }
 
-  /// Packs an array of 8 bits into bytes
   List<int> _packBitsIntoBytes(List<int> bytes) {
     List<int> packed = [];
     for (int i = 0; i < bytes.length; i += 8) {
@@ -190,9 +172,6 @@ class GeneratorEscP extends Generator {
     return packed;
   }
 
-  /// Print barcode
-  ///
-  /// ESC i Barcode types supported depend on the printer.
   List<int> printBarcode(String text, {int type = 3}) {
     List<int> bytes = [];
     bytes += _wrapCommand('\x1Dk$type');

@@ -109,7 +109,7 @@ abstract class Generator {
 
   //**************************** Public command generators ************************
 
-  /// Clear the buffer and reset text styles
+  /// Clear the buffer and reset text styles.
   List<int> reset();
 
   /// Ends printer job.

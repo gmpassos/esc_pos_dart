@@ -27,9 +27,11 @@ abstract class GenericPrinter {
 
   late final Generator _generator;
 
-  GenericPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5})
-      : _generator = GeneratorEscPos(_paperSize, _profile,
-            spaceBetweenRows: spaceBetweenRows);
+  GenericPrinter(this._paperSize, this._profile,
+      {int spaceBetweenRows = 5, Generator? generator})
+      : _generator = generator ??
+            GeneratorEscPos(_paperSize, _profile,
+                spaceBetweenRows: spaceBetweenRows);
 
   Generator get generator => _generator;
 
@@ -182,7 +184,8 @@ abstract class GenericPrinter {
 /// A virtual ESC/POS printer that stores printed data in an internal buffer.
 /// The stored data can be retrieved using [toBytes].
 class BytesPrinter extends GenericPrinter {
-  BytesPrinter(super.paperSize, super.profile, {super.spaceBetweenRows});
+  BytesPrinter(super.paperSize, super.profile,
+      {super.spaceBetweenRows, super.generator});
 
   final BytesBuilder _bytesBuilder = BytesBuilder();
 
