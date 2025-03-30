@@ -1,3 +1,13 @@
+## 1.1.0
+
+- Converted to Dart enums:
+  - `PaperSize`, `PosTextSize`, `PosBeepDuration`.
+
+- `Generator` now is an interface.
+  - Implementations:
+    - `GeneratorEscPos` (ESC/POS)
+    - `GeneratorEscP` (ESC/P) (new)
+
 ## 1.0.6
 
 🚀 Refactor: Refactor `NetworkPrinter` into `GenericPrinter` class.
