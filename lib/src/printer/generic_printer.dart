@@ -15,6 +15,7 @@ import '../utils/barcode.dart';
 import '../utils/capability_profile.dart';
 import '../utils/enums.dart';
 import '../utils/generator.dart';
+import '../utils/generator_esc_pos.dart';
 import '../utils/pos_column.dart';
 import '../utils/pos_styles.dart';
 import '../utils/qrcode.dart';
@@ -27,8 +28,8 @@ abstract class GenericPrinter {
   late final Generator _generator;
 
   GenericPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5})
-      : _generator =
-            Generator(_paperSize, _profile, spaceBetweenRows: spaceBetweenRows);
+      : _generator = GeneratorEscPos(_paperSize, _profile,
+            spaceBetweenRows: spaceBetweenRows);
 
   Generator get generator => _generator;
 
