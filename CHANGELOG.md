@@ -8,6 +8,10 @@
     - `GeneratorEscPos` (ESC/POS)
     - `GeneratorEscP` (ESC/P) (new)
 
+- `PrinterCommandStyle`:
+  - Field `align` now is a `PosAlign`.
+  - Field `fontType` now is a `PosFontType`.
+
 ## 1.0.6
 
 🚀 Refactor: Refactor `NetworkPrinter` into `GenericPrinter` class.

@@ -120,10 +120,10 @@ class PrinterCommandStyle {
   final bool reverse;
   final bool underline;
   final bool turn90;
-  final String align;
+  final PosAlign align;
   final int width;
   final int height;
-  final String fontType;
+  final PosFontType fontType;
   final String codeTable;
 
   PrinterCommandStyle(
@@ -131,10 +131,10 @@ class PrinterCommandStyle {
       this.reverse = false,
       this.underline = false,
       this.turn90 = false,
-      this.align = 'left',
+      this.align = PosAlign.left,
       this.width = 1,
       this.height = 1,
-      this.fontType = 'a',
+      this.fontType = PosFontType.fontA,
       this.codeTable = 'CP437'});
 
   factory PrinterCommandStyle.fromJson(Map<String, dynamic> j) =>
@@ -143,10 +143,10 @@ class PrinterCommandStyle {
         reverse: j['reverse'] as bool? ?? false,
         underline: j['underline'] as bool? ?? false,
         turn90: j['turn90'] as bool? ?? false,
-        align: j['align'] as String? ?? 'left',
+        align: PosAlign.from(j['align']) ?? PosAlign.left,
         width: j['width'] as int? ?? 1,
         height: j['height'] as int? ?? 1,
-        fontType: j['fontType'] as String? ?? 'a',
+        fontType: PosFontType.from(j['fontType']) ?? PosFontType.fontA,
         codeTable: j['codeTable'] as String? ?? 'CP437',
       );
 
@@ -157,10 +157,10 @@ class PrinterCommandStyle {
         if (reverse) 'reverse': reverse,
         if (underline) 'underline': underline,
         if (turn90) 'turn90': turn90,
-        if (align != 'left') 'align': align,
+        if (align != PosAlign.left) 'align': align.name,
         if (width != 1) 'width': width,
         if (height != 1) 'height': height,
-        if (fontType != 'a') 'fontType': fontType,
+        if (fontType != PosFontType.fontA) 'fontType': fontType.valueName,
         if (codeTable != 'CP437') 'codeTable': codeTable,
       };
 
@@ -169,10 +169,10 @@ class PrinterCommandStyle {
         reverse: reverse,
         underline: underline,
         turn90: turn90,
-        align: PosAlign.values.firstWhere((e) => e.name == align),
+        align: align,
         width: getPosTextSize(width),
         height: getPosTextSize(height),
-        fontType: fontType == 'b' ? PosFontType.fontB : PosFontType.fontA,
+        fontType: fontType,
         codeTable: codeTable,
       );
 

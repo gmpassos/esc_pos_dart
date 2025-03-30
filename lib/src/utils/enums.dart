@@ -12,12 +12,61 @@ enum PosAlign {
   right(2);
 
   final int value;
+
   const PosAlign(this.value);
+
+  static PosAlign? from(String? s) {
+    if (s == null) return null;
+    s = s.trim();
+    if (s.isEmpty) return null;
+
+    switch (s.toLowerCase()) {
+      case 'l':
+      case 'left':
+        return left;
+      case 'c':
+      case 'center':
+        return center;
+      case 'r':
+      case 'right':
+        return right;
+      default:
+        return null;
+    }
+  }
 }
 
 enum PosCutMode { full, partial }
 
-enum PosFontType { fontA, fontB }
+enum PosFontType {
+  fontA(0, 'a'),
+  fontB(1, 'b');
+
+  final int value;
+  final String valueName;
+
+  const PosFontType(this.value, this.valueName);
+
+  static PosFontType? from(String? s) {
+    if (s == null) return null;
+    s = s.trim();
+    if (s.isEmpty) return null;
+
+    switch (s.toLowerCase()) {
+      case '':
+      case '0':
+      case 'a':
+      case 'fonta':
+        return fontA;
+      case '1':
+      case 'b':
+      case 'fontb':
+        return fontB;
+      default:
+        return null;
+    }
+  }
+}
 
 enum PosDrawer { pin2, pin5 }
 
@@ -37,6 +86,7 @@ enum PosTextSize {
   size8(8);
 
   final int value;
+
   const PosTextSize(this.value);
 
   static int decSize(PosTextSize height, PosTextSize width) =>
