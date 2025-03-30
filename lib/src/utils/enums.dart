@@ -6,7 +6,14 @@
  * See LICENSE for distribution and usage details.
  */
 
-enum PosAlign { left, center, right }
+enum PosAlign {
+  left(0),
+  center(1),
+  right(2);
+
+  final int value;
+  const PosAlign(this.value);
+}
 
 enum PosCutMode { full, partial }
 

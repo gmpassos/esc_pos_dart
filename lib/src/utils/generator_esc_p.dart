@@ -29,16 +29,6 @@ class GeneratorEscP extends Generator {
     return escSequence.codeUnits;
   }
 
-  /// Generate multiple bytes for a number (low/high)
-  List<int> _intLowHigh(int value, int byteCount) {
-    final List<int> res = <int>[];
-    for (int i = 0; i < byteCount; i++) {
-      res.add(value & 0xFF); // Get the least significant byte
-      value = value >> 8; // Shift to get the next byte
-    }
-    return res;
-  }
-
   // ************************ Command Generators ************************
 
   @override
@@ -142,7 +132,7 @@ class GeneratorEscP extends Generator {
     final oneChannelBytes = image.getBytes(format: Format.luminance);
 
     final widthBytes = ((image.width + 7) ~/ 8);
-    final heightBytes = image.height;
+    //final heightBytes = image.height;
 
     // ESC * m nL nH - Select bitmap mode
     const int m = 0; // 0 = 8-dot single-density
@@ -193,14 +183,206 @@ class GeneratorEscP extends Generator {
   }
 
   @override
-  List<int> barcode(Barcode barcode,
-      {int? width,
-      int? height,
-      BarcodeFont? font,
-      BarcodeText textPos = BarcodeText.below,
-      PosAlign align = PosAlign.center}) {
-    // TODO: implement barcode
-    throw UnimplementedError();
+  List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
+    var bytes = <int>[];
+
+    // Set alignment
+    if (styles.align != globalStyles.align) {
+      bytes.addAll(
+          _wrapCommand('\x1Ba${String.fromCharCode(styles.align.value)}'));
+      globalStyles = globalStyles.copyWith(align: styles.align);
+    }
+
+    // Bold
+    if (styles.bold != globalStyles.bold) {
+      bytes.addAll(_wrapCommand(styles.bold ? '\x1BE\x01' : '\x1BE\x00'));
+      globalStyles = globalStyles.copyWith(bold: styles.bold);
+    }
+
+    // Underline
+    if (styles.underline != globalStyles.underline) {
+      bytes.addAll(_wrapCommand(styles.underline ? '\x1B-\x01' : '\x1B-\x00'));
+      globalStyles = globalStyles.copyWith(underline: styles.underline);
+    }
+
+    // Reverse
+    if (styles.reverse != globalStyles.reverse) {
+      bytes.addAll(_wrapCommand(styles.reverse ? '\x1DB\x01' : '\x1DB\x00'));
+      globalStyles = globalStyles.copyWith(reverse: styles.reverse);
+    }
+
+    // Font Type
+    if (styles.fontType != null && styles.fontType != globalStyles.fontType) {
+      bytes.addAll(_wrapCommand(
+          styles.fontType == PosFontType.fontB ? '\x1BM\x01' : '\x1BM\x00'));
+      globalStyles = globalStyles.copyWith(fontType: styles.fontType);
+    }
+
+    // Character Size
+    if (styles.height.value != globalStyles.height.value ||
+        styles.width.value != globalStyles.width.value) {
+      bytes.addAll(_wrapCommand(
+          '\x1D!${String.fromCharCode((styles.height.value << 4) | styles.width.value)}'));
+      globalStyles =
+          globalStyles.copyWith(height: styles.height, width: styles.width);
+    }
+
+    // Kanji Mode
+    bytes.addAll(_wrapCommand(isKanji ? '\x1C&' : '\x1C.'));
+
+    return bytes;
+  }
+
+  @override
+  List<int> image(Image imgSrc, {PosAlign align = PosAlign.center}) {
+    final bytes = <int>[];
+
+    // Convert image to monochrome (1-bit)
+    final Image image = convertToMonochrome(imgSrc);
+    final int width = (image.width + 7) ~/ 8; // Bytes per row
+    final int height = image.height;
+
+    // Alignment
+    if (align == PosAlign.center) {
+      bytes.addAll(_wrapCommand('\x1Ba\x01')); // Center alignment
+    } else if (align == PosAlign.right) {
+      bytes.addAll(_wrapCommand('\x1Ba\x02')); // Right alignment
+    } else {
+      bytes.addAll(_wrapCommand('\x1Ba\x00')); // Left alignment
+    }
+
+    // Set line spacing to match image height
+    bytes.addAll(_wrapCommand('\x1B3\x24'));
+
+    // Image printing command
+    for (int y = 0; y < height; y++) {
+      bytes
+          .addAll(_wrapCommand('\x1B*\x21')); // ESC * m (Select bit image mode)
+      bytes.add(width & 0xFF); // Width in bytes (low byte)
+      bytes.add((width >> 8) & 0xFF); // Width in bytes (high byte)
+
+      for (int x = 0; x < width * 8; x += 8) {
+        int byte = 0;
+        for (int bit = 0; bit < 8; bit++) {
+          int pixelX = x + bit;
+          if (pixelX < image.width) {
+            int pixel = image.getPixel(pixelX, y);
+            int grayscale = getLuminance(pixel);
+            if (grayscale < 128) {
+              byte |= (1 << (7 - bit));
+            }
+          }
+        }
+        bytes.add(byte);
+      }
+      bytes.addAll(_wrapCommand('\n'));
+    }
+
+    // Reset line spacing
+    bytes.addAll(_wrapCommand('\x1B2'));
+
+    return bytes;
+  }
+
+  Image convertToMonochrome(Image src) {
+    final Image monochrome = Image(src.width, src.height);
+    for (int y = 0; y < src.height; y++) {
+      for (int x = 0; x < src.width; x++) {
+        final pixel = src.getPixel(x, y);
+        final gray = getLuminance(pixel);
+        final bw = gray < 128 ? 0xFF000000 : 0xFFFFFFFF;
+        monochrome.setPixel(x, y, bw);
+      }
+    }
+    return monochrome;
+  }
+
+  int getLuminance(int color) {
+    final r = (color >> 16) & 0xFF;
+    final g = (color >> 8) & 0xFF;
+    final b = color & 0xFF;
+    return (r * 0.3 + g * 0.59 + b * 0.11).toInt();
+  }
+
+  @override
+  List<int> barcode(
+    Barcode barcode, {
+    int? width,
+    int? height,
+    BarcodeFont? font,
+    BarcodeText textPos = BarcodeText.below,
+    PosAlign align = PosAlign.center,
+  }) {
+    var bytes = <int>[];
+
+    // Set alignment
+    if (align == PosAlign.center) {
+      bytes.addAll(_wrapCommand('\x1Ba\x01'));
+    } else if (align == PosAlign.right) {
+      bytes.addAll(_wrapCommand('\x1Ba\x02'));
+    } else {
+      bytes.addAll(_wrapCommand('\x1Ba\x00'));
+    }
+
+    // Set height (ESC i h)
+    if (height != null && height >= 1 && height <= 255) {
+      bytes.addAll(_wrapCommand('\x1Di${String.fromCharCode(height)}'));
+    }
+
+    // Set width (ESC w n)
+    if (width != null && width >= 1 && width <= 3) {
+      bytes.addAll(_wrapCommand('\x1Dw${String.fromCharCode(width)}'));
+    }
+
+    // Set text position (ESC i p)
+    bytes.addAll(_wrapCommand('\x1Dip${String.fromCharCode(textPos.value)}'));
+
+    // Print barcode (ESC b t d...)
+    bytes.addAll(
+        _wrapCommand('\x1Db${String.fromCharCode(barcode.type!.value)}'));
+    bytes.add(barcode.data!.length);
+    bytes.addAll(barcode.data!);
+
+    return bytes;
+  }
+
+  @override
+  List<int> qrcode(
+    String text, {
+    PosAlign align = PosAlign.center,
+    QRSize size = QRSize.size4,
+    QRCorrection cor = QRCorrection.L,
+  }) {
+    var bytes = <int>[];
+
+    // Set alignment
+    if (align == PosAlign.center) {
+      bytes.addAll(_wrapCommand('\x1Ba\x01'));
+    } else if (align == PosAlign.right) {
+      bytes.addAll(_wrapCommand('\x1Ba\x02'));
+    } else {
+      bytes.addAll(_wrapCommand('\x1Ba\x00'));
+    }
+
+    // Set QR code size (ESC ( k pL pH cn fn)
+    bytes.addAll(_wrapCommand(
+        '\x1D(k\x04\x00\x31\x43${String.fromCharCode(size.value)}'));
+
+    // Set error correction level (ESC ( k pL pH cn fn)
+    bytes.addAll(_wrapCommand(
+        '\x1D(k\x03\x00\x31\x45${String.fromCharCode(cor.value)}'));
+
+    // Store QR code data (ESC ( k pL pH cn fn)
+    final dataBytes = text.codeUnits;
+    final dataLen = dataBytes.length + 3;
+    bytes.addAll(_wrapCommand(
+        '\x1D(k${String.fromCharCode(dataLen & 0xFF)}${String.fromCharCode((dataLen >> 8) & 0xFF)}\x31\x50\x30'));
+    bytes.addAll(dataBytes);
+
+    // Print QR code (ESC ( k pL pH cn fn)
+    bytes.addAll(_wrapCommand('\x1D(k\x03\x00\x31\x51\x30'));
+
+    return bytes;
   }
 
   @override
@@ -210,25 +392,10 @@ class GeneratorEscP extends Generator {
   }
 
   @override
-  List<int> image(Image imgSrc, {PosAlign align = PosAlign.center}) {
-    // TODO: implement image
-    throw UnimplementedError();
-  }
-
-  @override
   List<int> printCodeTable({String? codeTable}) {
     // TODO: implement use of `codeTable`.
     var bytes = List<int>.generate(256, (i) => i);
     return bytes;
-  }
-
-  @override
-  List<int> qrcode(String text,
-      {PosAlign align = PosAlign.center,
-      QRSize size = QRSize.size4,
-      QRCorrection cor = QRCorrection.L}) {
-    // TODO: implement qrcode
-    throw UnimplementedError();
   }
 
   @override
@@ -252,12 +419,6 @@ class GeneratorEscP extends Generator {
   @override
   List<int> setGlobalCodeTable(String? codeTable) {
     // TODO: implement setGlobalCodeTable
-    throw UnimplementedError();
-  }
-
-  @override
-  List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
-    // TODO: implement setStyles
     throw UnimplementedError();
   }
 
