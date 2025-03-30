@@ -52,6 +52,8 @@ void main() {
           printedBytes,
           equals([
             27,
+            64,
+            27,
             36,
             0,
             0,
@@ -194,6 +196,8 @@ void main() {
       expect(
           printedBytes,
           equals([
+            27,
+            64,
             27,
             36,
             0,
@@ -343,6 +347,8 @@ void main() {
       expect(
           printedBytes,
           equals([
+            27,
+            64,
             27,
             36,
             0,
@@ -586,6 +592,8 @@ void main() {
       expect(
           printedBytes,
           equals([
+            27,
+            64,
             27,
             80,
             72,

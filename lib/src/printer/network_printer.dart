@@ -59,7 +59,6 @@ class NetworkPrinter extends GenericPrinter {
       _connected = true;
 
       _socket.listen(_addInputBytes);
-      _socket.add(generator.reset());
 
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {

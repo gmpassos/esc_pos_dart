@@ -12,6 +12,10 @@
   - Field `align` now is a `PosAlign`.
   - Field `fontType` now is a `PosFontType`.
 
+- `PrinterDocument`:
+  - `print`:
+    - Send a `reset` command before start printing.
+
 ## 1.0.6
 
 🚀 Refactor: Refactor `NetworkPrinter` into `GenericPrinter` class.
