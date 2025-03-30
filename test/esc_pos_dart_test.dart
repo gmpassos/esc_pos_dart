@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('PrinterDocument', () {
-    test('Tests not implemented', () {
-      var doc = _buildPrinterDocument();
+    test('toJson', () {
+      var doc = _buildPrinterDocument1();
 
       expect(
           doc.toJson(),
@@ -32,15 +32,13 @@ void main() {
             },
           ));
     });
-  });
 
-  group('PrinterDocument', () {
-    test('', () async {
+    test('BytesPrinter (1)', () async {
       var profile = await CapabilityProfile.load();
 
       final printer = BytesPrinter(PaperSize.mm80, profile);
 
-      var doc = _buildPrinterDocument();
+      var doc = _buildPrinterDocument1();
 
       doc.print(printer);
 
@@ -183,10 +181,252 @@ void main() {
             48
           ]));
     });
+
+    test('BytesPrinter (2)', () async {
+      var profile = await CapabilityProfile.load();
+
+      final printer = BytesPrinter(PaperSize.mm80, profile);
+
+      var doc = _buildPrinterDocument2();
+
+      doc.print(printer);
+
+      var printedBytes = printer.toBytes();
+
+      expect(printedBytes.length, greaterThan(10));
+
+      print(printedBytes);
+
+      expect(
+          printedBytes,
+          equals([
+            27,
+            36,
+            0,
+            0,
+            27,
+            77,
+            0,
+            28,
+            46,
+            27,
+            116,
+            0,
+            72,
+            101,
+            108,
+            108,
+            111,
+            10,
+            27,
+            36,
+            0,
+            0,
+            27,
+            97,
+            50,
+            27,
+            69,
+            1,
+            28,
+            46,
+            27,
+            116,
+            0,
+            87,
+            111,
+            114,
+            108,
+            100,
+            33,
+            10,
+            27,
+            36,
+            0,
+            0,
+            27,
+            97,
+            48,
+            27,
+            69,
+            0,
+            28,
+            46,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            10,
+            27,
+            36,
+            0,
+            0,
+            28,
+            46,
+            66,
+            108,
+            111,
+            99,
+            107,
+            32,
+            50,
+            10,
+            27,
+            100,
+            3,
+            27,
+            36,
+            0,
+            0,
+            28,
+            46,
+            73,
+            109,
+            97,
+            103,
+            101,
+            58,
+            10,
+            27,
+            97,
+            49,
+            28,
+            46,
+            27,
+            51,
+            16,
+            27,
+            42,
+            33,
+            1,
+            0,
+            128,
+            0,
+            0,
+            10,
+            27,
+            50,
+            27,
+            36,
+            0,
+            0,
+            27,
+            97,
+            48,
+            28,
+            46,
+            65,
+            32,
+            67,
+            111,
+            108,
+            49,
+            27,
+            36,
+            22,
+            1,
+            28,
+            46,
+            65,
+            32,
+            67,
+            111,
+            108,
+            50,
+            10,
+            27,
+            36,
+            0,
+            0,
+            28,
+            46,
+            66,
+            32,
+            67,
+            111,
+            108,
+            49,
+            27,
+            36,
+            139,
+            0,
+            28,
+            46,
+            66,
+            32,
+            67,
+            111,
+            108,
+            50,
+            10,
+            27,
+            36,
+            0,
+            0,
+            28,
+            46,
+            66,
+            121,
+            33,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            29,
+            86,
+            48
+          ]));
+    });
   });
 }
 
-PrinterDocument _buildPrinterDocument() {
+PrinterDocument _buildPrinterDocument1() {
   var image = Image(1, 1);
   image.setPixel(0, 0, 0xFF0000FF);
 
@@ -200,6 +440,43 @@ PrinterDocument _buildPrinterDocument() {
   doc.addHR();
 
   doc.addImage(image);
+
+  doc.addCut();
+  return doc;
+}
+
+PrinterDocument _buildPrinterDocument2() {
+  var image = Image(1, 1);
+  image.setPixel(0, 0, 0xFF0000FF);
+
+  var doc = PrinterDocument();
+
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: 'left'));
+
+  doc.addText(
+      text: 'World!', style: PrinterCommandStyle(align: 'right', bold: true));
+
+  doc.addHR();
+
+  doc.addText(text: "Block 2");
+
+  doc.addFeed(n: 3);
+
+  doc.addText(text: "Image:");
+
+  doc.addImage(image);
+
+  doc.addRow([
+    PrinterCommandColumn("A Col1", width: 6),
+    PrinterCommandColumn("A Col2", width: 6),
+  ]);
+
+  doc.addRow([
+    PrinterCommandColumn("B Col1", width: 3),
+    PrinterCommandColumn("B Col2", width: 9),
+  ]);
+
+  doc.addText(text: "By!");
 
   doc.addCut();
   return doc;
