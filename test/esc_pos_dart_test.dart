@@ -567,7 +567,7 @@ void main() {
           ]));
     });
 
-    test('BytesPrinter (ESC/P 1)', () async {
+    test('BytesPrinter (ESC/P 0)', () async {
       var profile = await CapabilityProfile.load();
 
       final printer = BytesPrinter(PaperSize.mm80, profile,
@@ -664,10 +664,11 @@ PrinterDocument _buildPrinterDocument0() {
 
   var doc = PrinterDocument();
 
-  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: 'left'));
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 
   doc.addText(
-      text: 'World!', style: PrinterCommandStyle(align: 'right', bold: true));
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
 
   doc.addHR();
 
@@ -685,10 +686,11 @@ PrinterDocument _buildPrinterDocument1() {
 
   var doc = PrinterDocument();
 
-  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: 'left'));
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 
   doc.addText(
-      text: 'World!', style: PrinterCommandStyle(align: 'right', bold: true));
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
 
   doc.addHR();
 
@@ -704,10 +706,11 @@ PrinterDocument _buildPrinterDocument2() {
 
   var doc = PrinterDocument();
 
-  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: 'left'));
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 
   doc.addText(
-      text: 'World!', style: PrinterCommandStyle(align: 'right', bold: true));
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
 
   doc.addHR();
 
