@@ -17,6 +17,7 @@
 - `PrinterDocument`:
   - `print`:
     - Send a `reset` command before start printing.
+    - Send a `endJob` command at the end of printing.
 
 ## 1.0.6
 

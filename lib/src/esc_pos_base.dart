@@ -47,11 +47,15 @@ class PrinterDocument {
       addCommand(PrinterCommandImage(image, align: align));
 
   void print(GenericPrinter printer) {
+    if (commands.isEmpty) return;
+
     printer.reset();
 
     for (var c in commands) {
       c.print(printer);
     }
+
+    printer.endJob();
   }
 
   Map<String, dynamic> toJson() => {
