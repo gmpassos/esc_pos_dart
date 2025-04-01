@@ -26,8 +26,8 @@ class GeneratorEscPos extends Generator {
 
   GeneratorEscPos(super._paperSize, this._profile, {super.spaceBetweenRows});
 
-  // Global styles
-  String? _codeTable;
+  @override
+  String get defaultCodeTable => 'CP437';
 
   // ************************ Internal helpers ************************
 
@@ -154,25 +154,23 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> reset() {
-    var bytes = <int>[];
-    bytes += cInit.codeUnits;
-    globalStyles = PosStyles();
-    bytes += setGlobalCodeTable(_codeTable);
-    bytes += setGlobalFont(globalFont);
+    globalStyles = initialStyle;
+    var bytes = cInit.codeUnits;
+    bytes += setGlobalCodeTable(codeTable);
+    bytes += setFont(globalFont);
+    bytes += setStyles(initialStyle);
     return bytes;
   }
 
   @override
   List<int> endJob() {
-    var bytes = <int>[];
-    bytes += cEndJob.codeUnits;
+    var bytes = cEndJob.codeUnits;
     return bytes;
   }
 
   @override
   List<int> setGlobalCodeTable(String? codeTable) {
     var bytes = <int>[];
-    _codeTable = codeTable;
     if (codeTable != null) {
       globalStyles = globalStyles.copyWith(codeTable: codeTable);
       bytes += <int>[
@@ -184,19 +182,10 @@ class GeneratorEscPos extends Generator {
   }
 
   @override
-  List<int> setGlobalFont(PosFontType? font, {int? maxCharsPerLine}) {
-    globalFont = font;
-    List<int> bytes;
-    if (font != null) {
-      globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
-      globalStyles = globalStyles.copyWith(fontType: font);
-      bytes = font == PosFontType.fontB ? cFontB.codeUnits : cFontA.codeUnits;
-    } else {
-      if (maxCharsPerLine != null) {
-        globalMaxCharsPerLine = maxCharsPerLine;
-      }
-      bytes = [];
-    }
+  List<int> setFont(PosFontType font, {int? maxCharsPerLine}) {
+    globalStyles = globalStyles.copyWith(fontType: font);
+    globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
+    var bytes = font == PosFontType.fontB ? cFontB.codeUnits : cFontA.codeUnits;
     return bytes;
   }
 
@@ -211,8 +200,18 @@ class GeneratorEscPos extends Generator {
   }
 
   @override
-  List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
+  List<int> setStyles(PosStyles styles, {bool? isKanji}) {
     var bytes = <int>[];
+
+    // Set local code table
+    if (styles.codeTable != null &&
+        globalStyles.codeTable != styles.codeTable) {
+      bytes += Uint8List.fromList(
+        List.from(cCodeTable.codeUnits)
+          ..add(_profile.getCodePageId(styles.codeTable)),
+      );
+      globalStyles = globalStyles.copyWith(codeTable: styles.codeTable);
+    }
 
     if (styles.align != globalStyles.align) {
       bytes += encodeChars(styles.align == PosAlign.left
@@ -222,36 +221,30 @@ class GeneratorEscPos extends Generator {
     }
 
     if (styles.bold != globalStyles.bold) {
-      bytes += styles.bold ? cBoldOn.codeUnits : cBoldOff.codeUnits;
+      bytes += (styles.bold ? cBoldOn : cBoldOff).codeUnits;
       globalStyles = globalStyles.copyWith(bold: styles.bold);
     }
 
     if (styles.turn90 != globalStyles.turn90) {
-      bytes += styles.turn90 ? cTurn90On.codeUnits : cTurn90Off.codeUnits;
+      bytes += (styles.turn90 ? cTurn90On : cTurn90Off).codeUnits;
       globalStyles = globalStyles.copyWith(turn90: styles.turn90);
     }
 
     if (styles.reverse != globalStyles.reverse) {
-      bytes += styles.reverse ? cReverseOn.codeUnits : cReverseOff.codeUnits;
+      bytes += (styles.reverse ? cReverseOn : cReverseOff).codeUnits;
       globalStyles = globalStyles.copyWith(reverse: styles.reverse);
     }
 
     if (styles.underline != globalStyles.underline) {
-      bytes +=
-          styles.underline ? cUnderline1dot.codeUnits : cUnderlineOff.codeUnits;
+      bytes += (styles.underline ? cUnderline1dot : cUnderlineOff).codeUnits;
       globalStyles = globalStyles.copyWith(underline: styles.underline);
     }
 
     // Set font
     if (styles.fontType != null && styles.fontType != globalStyles.fontType) {
-      bytes += styles.fontType == PosFontType.fontB
-          ? cFontB.codeUnits
-          : cFontA.codeUnits;
-      globalStyles = globalStyles.copyWith(fontType: styles.fontType);
-    } else if (globalFont != null && globalFont != globalStyles.fontType) {
       bytes +=
-          globalFont == PosFontType.fontB ? cFontB.codeUnits : cFontA.codeUnits;
-      globalStyles = globalStyles.copyWith(fontType: globalFont);
+          (styles.fontType == PosFontType.fontB ? cFontB : cFontA).codeUnits;
+      globalStyles = globalStyles.copyWith(fontType: styles.fontType);
     }
 
     // Characters size
@@ -265,28 +258,11 @@ class GeneratorEscPos extends Generator {
           globalStyles.copyWith(height: styles.height, width: styles.width);
     }
 
-    // Set Kanji mode
-    if (isKanji) {
-      bytes += cKanjiOn.codeUnits;
-    } else {
-      bytes += cKanjiOff.codeUnits;
-    }
-
-    // Set local code table
-    if (styles.codeTable != null) {
-      bytes += Uint8List.fromList(
-        List.from(cCodeTable.codeUnits)
-          ..add(_profile.getCodePageId(styles.codeTable)),
-      );
-      globalStyles = globalStyles.copyWith(
-          align: styles.align, codeTable: styles.codeTable);
-    } else if (_codeTable != null) {
-      bytes += Uint8List.fromList(
-        List.from(cCodeTable.codeUnits)
-          ..add(_profile.getCodePageId(_codeTable)),
-      );
-      globalStyles =
-          globalStyles.copyWith(align: styles.align, codeTable: _codeTable);
+    isKanji ??= styles.isKanji;
+    if (globalStyles.isKanji != isKanji) {
+      // Set Kanji mode:
+      bytes += (isKanji ? cKanjiOn : cKanjiOff).codeUnits;
+      globalStyles = globalStyles.copyWith(isKanji: isKanji);
     }
 
     return bytes;
@@ -313,7 +289,7 @@ class GeneratorEscPos extends Generator {
     var bytes = <int>[];
     if (!containsChinese) {
       bytes += _text(
-        encode(text, isKanji: containsChinese),
+        encode(text),
         styles: styles,
         isKanji: containsChinese,
         maxCharsPerLine: maxCharsPerLine,
@@ -371,7 +347,9 @@ class GeneratorEscPos extends Generator {
   List<int> printCodeTable({String? codeTable}) {
     var bytes = cKanjiOff.codeUnits;
 
-    if (codeTable != null) {
+    var prevCodeTable = this.codeTable;
+
+    if (codeTable != null && prevCodeTable != codeTable) {
       bytes += <int>[
         ...cCodeTable.codeUnits,
         _profile.getCodePageId(codeTable),
@@ -380,9 +358,9 @@ class GeneratorEscPos extends Generator {
 
     bytes += List<int>.generate(256, (i) => i);
 
-    if (codeTable != null) {
+    if (codeTable != null && prevCodeTable != codeTable) {
       // Back to initial code table
-      bytes += setGlobalCodeTable(_codeTable);
+      bytes += setGlobalCodeTable(prevCodeTable);
     }
 
     return bytes;
@@ -700,7 +678,7 @@ class GeneratorEscPos extends Generator {
   List<int> _text(
     Uint8List textBytes, {
     PosStyles styles = const PosStyles(),
-    int? colInd = 0,
+    int? colInd,
     bool isKanji = false,
     int colWidth = 12,
     int? maxCharsPerLine,

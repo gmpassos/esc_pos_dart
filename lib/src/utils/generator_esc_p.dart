@@ -12,6 +12,9 @@ import 'qrcode.dart';
 class GeneratorEscP extends Generator {
   GeneratorEscP(super._paperSize);
 
+  @override
+  String get defaultCodeTable => 'CP437';
+
   // ************************ Internal helpers ************************
 
   @override
@@ -33,36 +36,19 @@ class GeneratorEscP extends Generator {
 
   @override
   List<int> reset() {
-    return _wrapCommand('\x1B@'); // ESC @
-  }
-
-  List<int> setFont(PosFontType fontType) {
-    globalFont = fontType;
-
-    switch (fontType) {
-      case PosFontType.fontA:
-        return _wrapCommand('\x1BP'); // ESC P (Font A: 10 CPI)
-      case PosFontType.fontB:
-        return _wrapCommand('\x1BM'); // ESC M (Font B: 12 CPI)
-    }
+    var bytes = _wrapCommand('\x1B@'); // ESC @
+    globalStyles = PosStyles();
+    bytes += setFont(globalFont);
+    return bytes;
   }
 
   @override
-  List<int> setGlobalFont(PosFontType? font, {int? maxCharsPerLine}) {
-    globalFont = font;
-    List<int> bytes;
-    if (font != null) {
-      globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
-      globalStyles = globalStyles.copyWith(fontType: font);
-      bytes = font == PosFontType.fontB
-          ? _wrapCommand('\x1BM')
-          : _wrapCommand('\x1BP');
-    } else {
-      if (maxCharsPerLine != null) {
-        globalMaxCharsPerLine = maxCharsPerLine;
-      }
-      bytes = <int>[];
-    }
+  List<int> setFont(PosFontType font, {int? maxCharsPerLine}) {
+    globalStyles = globalStyles.copyWith(fontType: font);
+    globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
+    var bytes = font == PosFontType.fontB
+        ? _wrapCommand('\x1BM')
+        : _wrapCommand('\x1BP');
     return bytes;
   }
 
@@ -78,23 +64,20 @@ class GeneratorEscP extends Generator {
     bool containsChinese = false,
     int? maxCharsPerLine,
   }) {
-    var fontType = styles.fontType ?? globalFont;
-    var bytes = <int>[];
-    if (fontType != null) {
-      bytes += setFont(fontType);
-    }
+    var bytes = setStyles(styles);
     bytes += encode(text);
-    bytes.addAll('\n'.codeUnits); // Add a line break
+    // Ensure at least one line break after the text
+    bytes += emptyLines(linesAfter + 1);
     return bytes;
   }
 
   @override
   List<int> emptyLines(int n) {
-    var bytes = <int>[];
     if (n > 0) {
-      bytes = _wrapCommand('\n' * n);
+      return _wrapCommand('\n' * n);
+    } else {
+      return <int>[];
     }
-    return bytes;
   }
 
   @override

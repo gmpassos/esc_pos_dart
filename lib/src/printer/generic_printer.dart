@@ -69,8 +69,7 @@ abstract class GenericPrinter {
   }
 
   void setGlobalFont(PosFontType font, {int? maxCharsPerLine}) {
-    writeBytes(
-        _generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
+    writeBytes(_generator.setFont(font, maxCharsPerLine: maxCharsPerLine));
   }
 
   void setStyles(PosStyles styles, {bool isKanji = false}) {

@@ -19,21 +19,38 @@ import 'pos_styles.dart';
 import 'qrcode.dart';
 
 abstract class Generator {
+  /// The printer paper size:
   final PaperSize _paperSize;
 
   PaperSize get paperSize => _paperSize;
 
   final int spaceBetweenRows;
 
-  Generator(this._paperSize, {this.spaceBetweenRows = 5});
+  /// The initial style to use on [reset].
+  late final PosStyles initialStyle;
+
+  Generator(this._paperSize,
+      {this.spaceBetweenRows = 5, PosStyles? initialStyle}) {
+    initialStyle ??= const PosStyles.defaults();
+
+    this.initialStyle =
+        initialStyle.ensureWithCodeTable(defaultCodeTable: defaultCodeTable);
+
+    assert(this.initialStyle.codeTable != null);
+    assert(this.initialStyle.codeTable!.isNotEmpty);
+  }
+
+  String get defaultCodeTable;
 
   //**************************** Global Styles ************************
 
   int? globalMaxCharsPerLine;
 
-  PosFontType? globalFont;
-
   PosStyles globalStyles = PosStyles();
+
+  PosFontType get globalFont => globalStyles.fontType ?? PosFontType.fontA;
+
+  String get codeTable => globalStyles.codeTable ?? defaultCodeTable;
 
   //**************************** Encoding ************************
 
@@ -97,11 +114,12 @@ abstract class Generator {
     if (maxCharsPerLine != null) {
       charsPerLine = maxCharsPerLine;
     } else {
-      if (styles.fontType != null) {
-        charsPerLine = getMaxCharsPerLine(styles.fontType);
+      var fontType = styles.fontType;
+      if (fontType != null) {
+        charsPerLine = getMaxCharsPerLine(fontType);
       } else {
-        charsPerLine =
-            maxCharsPerLine ?? getMaxCharsPerLine(globalStyles.fontType);
+        charsPerLine = maxCharsPerLine ??
+            getMaxCharsPerLine(fontType ?? PosFontType.fontA);
       }
     }
     return charsPerLine;
@@ -121,9 +139,9 @@ abstract class Generator {
 
   /// Set global font which will be used instead of the default printer's font
   /// (even after resetting)
-  List<int> setGlobalFont(PosFontType? font, {int? maxCharsPerLine});
+  List<int> setFont(PosFontType font, {int? maxCharsPerLine});
 
-  int getMaxCharsPerLine(PosFontType? font);
+  int getMaxCharsPerLine(PosFontType font);
 
   List<int> setStyles(PosStyles styles, {bool isKanji = false});
 
@@ -221,7 +239,7 @@ abstract class Generator {
   /// Print horizontal full width separator
   /// If [len] is null, then it will be defined according to the paper width
   List<int> hr({String ch = '-', int? len, int linesAfter = 0}) {
-    len ??= getMaxCharsPerLine(globalFont ?? PosFontType.fontA);
+    len ??= getMaxCharsPerLine(globalFont);
     var line = ch * len;
     return text(line);
   }

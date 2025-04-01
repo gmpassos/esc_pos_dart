@@ -4,6 +4,8 @@
   - `PaperSize`, `PosTextSize`, `PosBeepDuration`.
 
 - `Generator` now is an interface.
+  - Renamed `setGlobalFont` to `setFont`.
+  - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.
   - Implementations:
     - `GeneratorEscPos` (ESC/POS)
     - `GeneratorEscP` (ESC/P) (new)

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:esc_pos_dart/esc_pos_dart.dart';
 import 'package:image/image.dart';
 import 'package:test/test.dart';
@@ -46,6 +48,7 @@ void main() {
 
       expect(printedBytes.length, greaterThan(10));
 
+      print("<<${latin1.decode(printedBytes)}>>");
       print(printedBytes);
 
       expect(
@@ -54,11 +57,11 @@ void main() {
             27,
             64,
             27,
-            36,
-            0,
+            77,
             0,
             27,
-            77,
+            36,
+            0,
             0,
             28,
             46,
