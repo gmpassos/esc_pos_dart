@@ -1,3 +1,25 @@
+## 1.1.0
+
+- Converted to Dart enums:
+  - `PaperSize`, `PosTextSize`, `PosBeepDuration`.
+
+- `Generator` now is an interface.
+  - Renamed `setGlobalFont` to `setFont`.
+  - `cut`: parameter `extraLines = 2`.
+  - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.
+  - Implementations:
+    - `GeneratorEscPos` (ESC/POS)
+    - `GeneratorEscP` (ESC/P) (new)
+
+- `PrinterCommandStyle`:
+  - Field `align` now is a `PosAlign`.
+  - Field `fontType` now is a `PosFontType`.
+
+- `PrinterDocument`:
+  - `print`:
+    - Send a `reset` command before start printing.
+    - Send a `endJob` command at the end of printing.
+
 ## 1.0.6
 
 🚀 Refactor: Refactor `NetworkPrinter` into `GenericPrinter` class.

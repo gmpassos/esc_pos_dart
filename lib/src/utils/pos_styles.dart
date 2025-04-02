@@ -20,6 +20,7 @@ class PosStyles {
     this.width = PosTextSize.size1,
     this.fontType,
     this.codeTable,
+    this.isKanji = false,
   });
 
   // Init all fields with default values
@@ -33,6 +34,7 @@ class PosStyles {
     this.width = PosTextSize.size1,
     this.fontType = PosFontType.fontA,
     this.codeTable = "CP437",
+    this.isKanji = false,
   });
 
   final bool bold;
@@ -44,6 +46,7 @@ class PosStyles {
   final PosTextSize width;
   final PosFontType? fontType;
   final String? codeTable;
+  final bool isKanji;
 
   PosStyles copyWith({
     bool? bold,
@@ -55,6 +58,7 @@ class PosStyles {
     PosTextSize? width,
     PosFontType? fontType,
     String? codeTable,
+    bool? isKanji,
   }) {
     return PosStyles(
       bold: bold ?? this.bold,
@@ -66,6 +70,14 @@ class PosStyles {
       width: width ?? this.width,
       fontType: fontType ?? this.fontType,
       codeTable: codeTable ?? this.codeTable,
+      isKanji: isKanji ?? this.isKanji,
     );
+  }
+
+  PosStyles ensureWithCodeTable({String defaultCodeTable = 'CP437'}) {
+    if (codeTable == null || codeTable!.isEmpty) {
+      return copyWith(codeTable: defaultCodeTable);
+    }
+    return this;
   }
 }

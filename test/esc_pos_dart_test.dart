@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:esc_pos_dart/esc_pos_dart.dart';
 import 'package:image/image.dart';
 import 'package:test/test.dart';
@@ -33,7 +35,153 @@ void main() {
           ));
     });
 
-    test('BytesPrinter (1)', () async {
+    test('BytesPrinter (ESC/POS 0)', () async {
+      var profile = await CapabilityProfile.load();
+
+      final printer = BytesPrinter(PaperSize.mm80, profile);
+
+      var doc = _buildPrinterDocument0();
+
+      doc.print(printer);
+
+      var printedBytes = printer.toBytes();
+
+      expect(printedBytes.length, greaterThan(10));
+
+      print("<<${latin1.decode(printedBytes)}>>");
+      print(printedBytes);
+
+      expect(
+          printedBytes,
+          equals([
+            27,
+            64,
+            27,
+            77,
+            0,
+            27,
+            36,
+            0,
+            0,
+            28,
+            46,
+            27,
+            116,
+            0,
+            72,
+            101,
+            108,
+            108,
+            111,
+            10,
+            27,
+            36,
+            0,
+            0,
+            27,
+            97,
+            50,
+            27,
+            69,
+            1,
+            28,
+            46,
+            27,
+            116,
+            0,
+            87,
+            111,
+            114,
+            108,
+            100,
+            33,
+            10,
+            27,
+            36,
+            0,
+            0,
+            27,
+            97,
+            48,
+            27,
+            69,
+            0,
+            28,
+            46,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            10,
+            27,
+            100,
+            2,
+            27,
+            36,
+            0,
+            0,
+            28,
+            46,
+            66,
+            121,
+            33,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            29,
+            86,
+            48
+          ]));
+    });
+
+    test('BytesPrinter (ESC/POS 1)', () async {
       var profile = await CapabilityProfile.load();
 
       final printer = BytesPrinter(PaperSize.mm80, profile);
@@ -51,6 +199,8 @@ void main() {
       expect(
           printedBytes,
           equals([
+            27,
+            64,
             27,
             36,
             0,
@@ -182,7 +332,7 @@ void main() {
           ]));
     });
 
-    test('BytesPrinter (2)', () async {
+    test('BytesPrinter (ESC/POS 2)', () async {
       var profile = await CapabilityProfile.load();
 
       final printer = BytesPrinter(PaperSize.mm80, profile);
@@ -200,6 +350,8 @@ void main() {
       expect(
           printedBytes,
           equals([
+            27,
+            64,
             27,
             36,
             0,
@@ -423,7 +575,120 @@ void main() {
             48
           ]));
     });
+
+    test('BytesPrinter (ESC/P 0)', () async {
+      var profile = await CapabilityProfile.load();
+
+      final printer = BytesPrinter(PaperSize.mm80, profile,
+          generator: GeneratorEscP(PaperSize.mm80));
+
+      var doc = _buildPrinterDocument0();
+
+      doc.print(printer);
+
+      var printedBytes = printer.toBytes();
+
+      expect(printedBytes.length, greaterThan(10));
+
+      print(printedBytes);
+
+      expect(
+          printedBytes,
+          equals([
+            27,
+            64,
+            27,
+            80,
+            72,
+            101,
+            108,
+            108,
+            111,
+            10,
+            27,
+            80,
+            87,
+            111,
+            114,
+            108,
+            100,
+            33,
+            10,
+            27,
+            80,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            10,
+            27,
+            74,
+            50,
+            27,
+            80,
+            66,
+            121,
+            33,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            27,
+            86
+          ]));
+    });
   });
+}
+
+PrinterDocument _buildPrinterDocument0() {
+  var image = Image(1, 1);
+  image.setPixel(0, 0, 0xFF0000FF);
+
+  var doc = PrinterDocument();
+
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
+
+  doc.addText(
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
+
+  doc.addHR();
+
+  doc.addFeed(n: 2);
+
+  doc.addText(text: "By!");
+
+  doc.addCut();
+  return doc;
 }
 
 PrinterDocument _buildPrinterDocument1() {
@@ -432,10 +697,11 @@ PrinterDocument _buildPrinterDocument1() {
 
   var doc = PrinterDocument();
 
-  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: 'left'));
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 
   doc.addText(
-      text: 'World!', style: PrinterCommandStyle(align: 'right', bold: true));
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
 
   doc.addHR();
 
@@ -451,10 +717,11 @@ PrinterDocument _buildPrinterDocument2() {
 
   var doc = PrinterDocument();
 
-  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: 'left'));
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 
   doc.addText(
-      text: 'World!', style: PrinterCommandStyle(align: 'right', bold: true));
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
 
   doc.addHR();
 

@@ -16,7 +16,8 @@ import 'generic_printer.dart';
 
 /// Network ESC/POS Printer.
 class NetworkPrinter extends GenericPrinter {
-  NetworkPrinter(super._paperSize, super._profile, {super.spaceBetweenRows});
+  NetworkPrinter(super._paperSize, super._profile,
+      {super.spaceBetweenRows, super.generator});
 
   String? _host;
 
@@ -58,7 +59,6 @@ class NetworkPrinter extends GenericPrinter {
       _connected = true;
 
       _socket.listen(_addInputBytes);
-      _socket.add(generator.reset());
 
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
