@@ -5,6 +5,7 @@
 
 - `Generator` now is an interface.
   - Renamed `setGlobalFont` to `setFont`.
+  - `cut`: parameter `extraLines = 2`.
   - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.
   - Implementations:
     - `GeneratorEscPos` (ESC/POS)

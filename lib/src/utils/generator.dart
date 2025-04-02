@@ -169,7 +169,7 @@ abstract class Generator {
   /// Cut the paper
   ///
   /// [mode] is used to define the full or partial cut (if supported by the priner)
-  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 5});
+  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 2});
 
   /// Request transmission of printer status.
   List<int> transmissionOfStatus({int n = 1});

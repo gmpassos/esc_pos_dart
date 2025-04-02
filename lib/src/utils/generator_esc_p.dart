@@ -86,7 +86,7 @@ class GeneratorEscP extends Generator {
   }
 
   @override
-  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 5}) {
+  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 2}) {
     var bytes = emptyLines(extraLines);
     switch (mode) {
       case PosCutMode.partial:
