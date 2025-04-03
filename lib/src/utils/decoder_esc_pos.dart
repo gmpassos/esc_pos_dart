@@ -169,10 +169,7 @@ class DecoderEscPos extends Decoder {
                   var imgData = serial.sublist(imgInit, imgInit + dataLength);
                   consumed += dataLength;
 
-                  _output.add(CommandEscPosGeneric(
-                    'bit_image',
-                    parameters: [mode, nL, nH, imgData],
-                  ));
+                  _output.add(CommandEscPosBitImage(mode, nL, nH, imgData));
                 }
               default:
                 throw FormatException("Unknown ESC char: $c1");
@@ -261,6 +258,8 @@ abstract class CommandEscPos extends Command {
         return CommandEscPosFeed.fromJson(json);
       case 'text':
         return CommandEscPosText.fromJson(json);
+      case 'bit_image':
+        return CommandEscPosBitImage.fromJson(json);
       case 'cut':
         return CommandEscPosCut.fromJson(json);
       case 'end_job':
@@ -410,6 +409,34 @@ class CommandEscPosText extends CommandEscPos {
     var parameters = json["parameters"] as List?;
     var p = parameters![0] as String;
     return CommandEscPosText(p);
+  }
+}
+
+class CommandEscPosBitImage extends CommandEscPos {
+  final int mode;
+  final int nL;
+  final int nH;
+
+  final List<int> data;
+
+  CommandEscPosBitImage(this.mode, this.nL, this.nH, this.data)
+      : super('bit_image');
+
+  @override
+  List get parameters => [mode, nL, nH, data];
+
+  factory CommandEscPosBitImage.fromJson(Map json) {
+    var parameters = json["parameters"] as List?;
+
+    var mode = parameters![0] as int;
+
+    var nL = parameters[1] as int;
+    var nH = parameters[2] as int;
+
+    var dataList = parameters[3] as List;
+    var data = dataList.whereType<num>().map((e) => e.toInt()).toList();
+
+    return CommandEscPosBitImage(mode, nL, nH, data);
   }
 }
 
