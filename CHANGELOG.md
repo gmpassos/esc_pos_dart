@@ -3,7 +3,8 @@
 - Converted to Dart enums:
   - `PaperSize`, `PosTextSize`, `PosBeepDuration`.
 
-- `Generator` now is an interface.
+- `Generator` now is a base class.
+  - Added field `newLine`.
   - Renamed `setGlobalFont` to `setFont`.
   - `cut`: parameter `extraLines = 2`.
   - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.

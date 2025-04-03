@@ -26,7 +26,8 @@ import 'qrcode.dart';
 class GeneratorEscPos extends Generator {
   final CapabilityProfile _profile;
 
-  GeneratorEscPos(super._paperSize, this._profile, {super.spaceBetweenRows});
+  GeneratorEscPos(super._paperSize, this._profile,
+      {super.spaceBetweenRows, super.newLine, super.isWindows});
 
   @override
   String get defaultCodeTable => 'CP437';
@@ -316,7 +317,7 @@ class GeneratorEscPos extends Generator {
   List<int> emptyLines(int n) {
     var bytes = <int>[];
     if (n > 0) {
-      bytes = ('\n' * n).codeUnits;
+      bytes = (newLine * n).codeUnits;
     }
     return bytes;
   }
@@ -546,7 +547,7 @@ class GeneratorEscPos extends Generator {
     for (int i = 0; i < blobs.length; ++i) {
       bytes += List.from(header)
         ..addAll(blobs[i])
-        ..addAll('\n'.codeUnits);
+        ..addAll(newLine.codeUnits);
     }
     // Reset line spacing: ESC 2 (HEX: 0x1b 0x32)
     bytes += [27, 50];

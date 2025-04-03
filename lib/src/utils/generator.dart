@@ -30,8 +30,25 @@ abstract class Generator {
   /// The initial style to use on [reset].
   late final PosStyles initialStyle;
 
+  /// The newline character(s) used.
+  final String newLine;
+
+  /// Creates a new [Generator] instance.
+  ///
+  /// - [spaceBetweenRows]: The default spacing (in units) between rows. Defaults to `5`.
+  /// - [initialStyle]: The initial text style applied to the content.
+  /// - [newLine]: The newline character(s) used. If `null`, defaults to `\r\n` if [isWindows] is `true`, otherwise `\n`.
+  /// - [isWindows]: Whether the generator is running on a Windows system. Defaults to `false`.
   Generator(this._paperSize,
-      {this.spaceBetweenRows = 5, PosStyles? initialStyle}) {
+      {this.spaceBetweenRows = 5,
+      PosStyles? initialStyle,
+      String? newLine,
+      bool isWindows = false})
+      : newLine = resolveNewLine(newLine: newLine, isWindows: isWindows) {
+    if (this.newLine.isEmpty) {
+      throw ArgumentError("`newLine` can't be empty!");
+    }
+
     initialStyle ??= const PosStyles.defaults();
 
     this.initialStyle =
@@ -39,6 +56,24 @@ abstract class Generator {
 
     assert(this.initialStyle.codeTable != null);
     assert(this.initialStyle.codeTable!.isNotEmpty);
+  }
+
+  /// Determines the appropriate newline character(s).
+  ///
+  /// - [newLine]: A custom newline sequence. If provided and not empty, it is returned as-is.
+  /// - [isWindows]: Whether the system is Windows. Defaults to `false`.
+  ///
+  /// Returns the provided [newLine] if it is not `null` and not empty.
+  /// Otherwise, returns `\r\n` if [isWindows] is `true`, or `\n` otherwise.
+  static resolveNewLine({String? newLine, bool isWindows = false}) {
+    if (newLine != null && newLine.isNotEmpty) {
+      return newLine;
+    }
+
+    if (isWindows) {
+      return '\r\n';
+    }
+    return '\n';
   }
 
   String get defaultCodeTable;
@@ -56,7 +91,7 @@ abstract class Generator {
   //**************************** Encoding ************************
 
   Uint8List encode(String text, {bool isKanji = false}) {
-    // replace some non-ascii characters
+    // Replace some non-ASCII characters
     text = text
         .replaceAll("’", "'")
         .replaceAll("´", "'")
@@ -64,10 +99,14 @@ abstract class Generator {
         .replaceAll(" ", ' ')
         .replaceAll("•", '.');
 
-    if (!isKanji) {
-      return encodeChars(text);
-    } else {
+    if (newLine == '\r\n') {
+      text = text.replaceAll(RegExp(r"\r?\n"), "\r\n");
+    }
+
+    if (isKanji) {
       return Uint8List.fromList(gbk_bytes.encode(text));
+    } else {
+      return encodeChars(text);
     }
   }
 
