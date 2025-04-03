@@ -18,6 +18,7 @@ import 'pos_column.dart';
 import 'pos_styles.dart';
 import 'qrcode.dart';
 
+/// Base class for generating print commands.
 abstract class Generator {
   /// The printer paper size:
   final PaperSize _paperSize;

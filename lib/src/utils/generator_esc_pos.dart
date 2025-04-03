@@ -21,6 +21,8 @@ import 'pos_column.dart';
 import 'pos_styles.dart';
 import 'qrcode.dart';
 
+/// A generator for ESC/POS commands, used to format and send print instructions
+/// to compatible thermal printers.
 class GeneratorEscPos extends Generator {
   final CapabilityProfile _profile;
 
