@@ -4,7 +4,7 @@
   - `PaperSize`, `PosTextSize`, `PosBeepDuration`.
 
 - `Generator` now is a base class.
-  - Added field `newLine`.
+  - Added fields `newLine` and `normalizeNewLines`.
   - Renamed `setGlobalFont` to `setFont`.
   - `cut`: parameter `extraLines = 2`.
   - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.

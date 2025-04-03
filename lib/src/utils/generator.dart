@@ -30,8 +30,14 @@ abstract class Generator {
   /// The initial style to use on [reset].
   late final PosStyles initialStyle;
 
-  /// The newline character(s) used.
+  /// The newline character(s) used when encoding text.
   final String newLine;
+
+  /// Used by [encode]. Default: `true`.
+  ///
+  /// Determines whether [normalizeNewLines] should convert `\n` to `\r\n`
+  /// when [newLine] is set to `\r\n`.
+  final bool normalizeNewLines;
 
   /// Creates a new [Generator] instance.
   ///
@@ -43,6 +49,7 @@ abstract class Generator {
       {this.spaceBetweenRows = 5,
       PosStyles? initialStyle,
       String? newLine,
+      this.normalizeNewLines = true,
       bool isWindows = false})
       : newLine = resolveNewLine(newLine: newLine, isWindows: isWindows) {
     if (this.newLine.isEmpty) {
@@ -73,6 +80,7 @@ abstract class Generator {
     if (isWindows) {
       return '\r\n';
     }
+
     return '\n';
   }
 
@@ -90,6 +98,18 @@ abstract class Generator {
 
   //**************************** Encoding ************************
 
+  /// Encodes the given [text] into a byte sequence.
+  ///
+  /// - If [isKanji] is `true`, the text is encoded using the GBK character set.
+  /// - Otherwise, it is encoded using a standard character encoding.
+  /// - Some non-ASCII characters are replaced with their ASCII equivalents.
+  /// - If [normalizeNewLines] is `true`, newline sequences are normalized:
+  ///   - If [newLine] is `\r\n`, all occurrences of `\r` or `\n` are converted to `\r\n`.
+  ///   - If [newLine] is `\n`, all occurrences of `\r` or `\r\n` are converted to `\n`.
+  ///
+  /// See also:
+  /// - [newLine] for specifying the desired newline format.
+  /// - [normalizeNewLines] for enabling or disabling newline normalization.
   Uint8List encode(String text, {bool isKanji = false}) {
     // Replace some non-ASCII characters
     text = text
@@ -99,8 +119,12 @@ abstract class Generator {
         .replaceAll(" ", ' ')
         .replaceAll("•", '.');
 
-    if (newLine == '\r\n') {
-      text = text.replaceAll(RegExp(r"\r?\n"), "\r\n");
+    if (normalizeNewLines) {
+      if (newLine == '\r\n') {
+        text = text.replaceAll(RegExp(r"\r?\n"), "\r\n");
+      } else if (newLine == '\n') {
+        text = text.replaceAll(RegExp(r"\r?\n"), "\n");
+      }
     }
 
     if (isKanji) {
