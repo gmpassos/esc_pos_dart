@@ -154,11 +154,12 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> reset() {
-    globalStyles = initialStyle;
+    globalStyles = PosStyles();
     var bytes = cInit.codeUnits;
     bytes += setGlobalCodeTable(codeTable);
     bytes += setFont(globalFont);
     bytes += setStyles(initialStyle);
+    globalStyles = initialStyle;
     return bytes;
   }
 
@@ -170,22 +171,29 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> setGlobalCodeTable(String? codeTable) {
-    var bytes = <int>[];
-    if (codeTable != null) {
+    List<int> bytes;
+    if (codeTable != null && globalStyles.codeTable != codeTable) {
       globalStyles = globalStyles.copyWith(codeTable: codeTable);
-      bytes += <int>[
+      bytes = <int>[
         ...cCodeTable.codeUnits,
         _profile.getCodePageId(codeTable),
       ];
+    } else {
+      bytes = [];
     }
     return bytes;
   }
 
   @override
   List<int> setFont(PosFontType font, {int? maxCharsPerLine}) {
-    globalStyles = globalStyles.copyWith(fontType: font);
-    globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
-    var bytes = font == PosFontType.fontB ? cFontB.codeUnits : cFontA.codeUnits;
+    List<int> bytes;
+    if (globalStyles.fontType != font) {
+      globalStyles = globalStyles.copyWith(fontType: font);
+      globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
+      bytes = font == PosFontType.fontB ? cFontB.codeUnits : cFontA.codeUnits;
+    } else {
+      bytes = [];
+    }
     return bytes;
   }
 
