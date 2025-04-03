@@ -7,9 +7,9 @@
   - Renamed `setGlobalFont` to `setFont`.
   - `cut`: parameter `extraLines = 2`.
   - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.
-  - Implementations:
-    - `GeneratorEscPos` (ESC/POS)
-    - `GeneratorEscP` (ESC/P) (new)
+  - Implementation: `GeneratorEscPos` (ESC/POS)
+
+- New `Decoder` and `DecoderEscPos`.
 
 - `PrinterCommandStyle`:
   - Field `align` now is a `PosAlign`.
@@ -19,6 +19,9 @@
   - `print`:
     - Send a `reset` command before start printing.
     - Send a `endJob` command at the end of printing.
+
+- collection: ^1.19.0
+- lints: ^5.1.1
 
 ## 1.0.6
 

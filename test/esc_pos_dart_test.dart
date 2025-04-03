@@ -51,22 +51,79 @@ void main() {
       print("<<${latin1.decode(printedBytes)}>>");
       print(printedBytes);
 
+      var decodedCommands = DecoderEscPos().decode(printedBytes);
+
+      var commandsJson = decodedCommands.toJson();
+      var decodedCommands2 = CommandEscPos.fromJsonList(commandsJson);
+      expect(decodedCommands2, decodedCommands);
+
+      expect(commandsJson, [
+        {'name': 'reset'},
+        {
+          'name': 'table',
+          'parameters': [0]
+        },
+        {
+          'name': 'font',
+          'parameters': ['a']
+        },
+        {
+          'name': 'text',
+          'parameters': ['Hello\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['right']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['on']
+        },
+        {
+          'name': 'text',
+          'parameters': ['World!\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['off']
+        },
+        {
+          'name': 'text',
+          'parameters': ['------------------------------------------------\n']
+        },
+        {
+          'name': 'feed',
+          'parameters': [2]
+        },
+        {
+          'name': 'text',
+          'parameters': [
+            'By!\n'
+                '\n'
+                '\n'
+          ]
+        },
+        {
+          'name': 'cut',
+          'parameters': ['full']
+        },
+        {'name': 'end_job'}
+      ]);
+
       expect(
           printedBytes,
           equals([
             27,
             64,
             27,
-            77,
-            0,
-            27,
-            36,
-            0,
-            0,
-            28,
-            46,
-            27,
             116,
+            0,
+            27,
+            77,
             0,
             72,
             101,
@@ -75,20 +132,11 @@ void main() {
             111,
             10,
             27,
-            36,
-            0,
-            0,
-            27,
             97,
-            50,
+            2,
             27,
             69,
             1,
-            28,
-            46,
-            27,
-            116,
-            0,
             87,
             111,
             114,
@@ -97,17 +145,11 @@ void main() {
             33,
             10,
             27,
-            36,
-            0,
-            0,
-            27,
             97,
-            48,
+            0,
             27,
             69,
             0,
-            28,
-            46,
             45,
             45,
             45,
@@ -160,24 +202,16 @@ void main() {
             27,
             100,
             2,
-            27,
-            36,
-            0,
-            0,
-            28,
-            46,
             66,
             121,
             33,
             10,
             10,
             10,
-            10,
-            10,
-            10,
             29,
             86,
-            48
+            0,
+            12
           ]));
     });
 
@@ -194,7 +228,88 @@ void main() {
 
       expect(printedBytes.length, greaterThan(10));
 
+      print("<<${latin1.decode(printedBytes)}>>");
       print(printedBytes);
+
+      var decodedCommands = DecoderEscPos().decode(printedBytes);
+
+      var commandsJson = decodedCommands.toJson();
+      var decodedCommands2 = CommandEscPos.fromJsonList(commandsJson);
+      expect(decodedCommands2, decodedCommands);
+
+      expect(commandsJson, [
+        {'name': 'reset'},
+        {
+          'name': 'table',
+          'parameters': [0]
+        },
+        {
+          'name': 'font',
+          'parameters': ['a']
+        },
+        {
+          'name': 'text',
+          'parameters': ['Hello\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['right']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['on']
+        },
+        {
+          'name': 'text',
+          'parameters': ['World!\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['off']
+        },
+        {
+          'name': 'text',
+          'parameters': ['------------------------------------------------\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['center']
+        },
+        {
+          'name': 'lines_spacing',
+          'parameters': [16]
+        },
+        {
+          'name': 'bit_image',
+          'parameters': [
+            33,
+            1,
+            0,
+            [128]
+          ]
+        },
+        {
+          'name': 'text',
+          'parameters': ['\x00\x00\n']
+        },
+        {'name': 'lines_spacing:1/6'},
+        {
+          'name': 'text',
+          'parameters': [
+            '\n'
+                '\n'
+          ]
+        },
+        {
+          'name': 'cut',
+          'parameters': ['full']
+        },
+        {'name': 'end_job'}
+      ]);
 
       expect(
           printedBytes,
@@ -202,16 +317,10 @@ void main() {
             27,
             64,
             27,
-            36,
-            0,
+            116,
             0,
             27,
             77,
-            0,
-            28,
-            46,
-            27,
-            116,
             0,
             72,
             101,
@@ -220,20 +329,11 @@ void main() {
             111,
             10,
             27,
-            36,
-            0,
-            0,
-            27,
             97,
-            50,
+            2,
             27,
             69,
             1,
-            28,
-            46,
-            27,
-            116,
-            0,
             87,
             111,
             114,
@@ -242,17 +342,11 @@ void main() {
             33,
             10,
             27,
-            36,
-            0,
-            0,
-            27,
             97,
-            48,
+            0,
             27,
             69,
             0,
-            28,
-            46,
             45,
             45,
             45,
@@ -304,9 +398,7 @@ void main() {
             10,
             27,
             97,
-            49,
-            28,
-            46,
+            1,
             27,
             51,
             16,
@@ -323,12 +415,10 @@ void main() {
             50,
             10,
             10,
-            10,
-            10,
-            10,
             29,
             86,
-            48
+            0,
+            12
           ]));
     });
 
@@ -345,7 +435,128 @@ void main() {
 
       expect(printedBytes.length, greaterThan(10));
 
+      print("<<${latin1.decode(printedBytes)}>>");
       print(printedBytes);
+
+      var decodedCommands = DecoderEscPos().decode(printedBytes);
+
+      var commandsJson = decodedCommands.toJson();
+      var decodedCommands2 = CommandEscPos.fromJsonList(commandsJson);
+      expect(decodedCommands2, decodedCommands);
+
+      expect(commandsJson, [
+        {'name': 'reset'},
+        {
+          'name': 'table',
+          'parameters': [0]
+        },
+        {
+          'name': 'font',
+          'parameters': ['a']
+        },
+        {
+          'name': 'text',
+          'parameters': ['Hello\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['right']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['on']
+        },
+        {
+          'name': 'text',
+          'parameters': ['World!\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['off']
+        },
+        {
+          'name': 'text',
+          'parameters': [
+            '------------------------------------------------\n'
+                'Block 2\n'
+          ]
+        },
+        {
+          'name': 'feed',
+          'parameters': [3]
+        },
+        {
+          'name': 'text',
+          'parameters': ['Image:\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['center']
+        },
+        {
+          'name': 'lines_spacing',
+          'parameters': [16]
+        },
+        {
+          'name': 'bit_image',
+          'parameters': [
+            33,
+            1,
+            0,
+            [128]
+          ]
+        },
+        {
+          'name': 'text',
+          'parameters': ['\x00\x00\n']
+        },
+        {'name': 'lines_spacing:1/6'},
+        {
+          'name': 'absolute_pos',
+          'parameters': [0, 0]
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'text',
+          'parameters': ['A Col1']
+        },
+        {
+          'name': 'absolute_pos',
+          'parameters': [22, 1]
+        },
+        {
+          'name': 'text',
+          'parameters': ['A Col2\n']
+        },
+        {
+          'name': 'absolute_pos',
+          'parameters': [0, 0]
+        },
+        {
+          'name': 'text',
+          'parameters': ['B Col1']
+        },
+        {
+          "name": "absolute_pos",
+          "parameters": [139, 0]
+        },
+        {
+          "name": "text",
+          "parameters": ["B Col2\nBy!\n\n\n"]
+        },
+        {
+          "name": "cut",
+          "parameters": ["full"]
+        },
+        {"name": "end_job"}
+      ]);
 
       expect(
           printedBytes,
@@ -353,16 +564,10 @@ void main() {
             27,
             64,
             27,
-            36,
-            0,
+            116,
             0,
             27,
             77,
-            0,
-            28,
-            46,
-            27,
-            116,
             0,
             72,
             101,
@@ -371,20 +576,11 @@ void main() {
             111,
             10,
             27,
-            36,
-            0,
-            0,
-            27,
             97,
-            50,
+            2,
             27,
             69,
             1,
-            28,
-            46,
-            27,
-            116,
-            0,
             87,
             111,
             114,
@@ -393,17 +589,11 @@ void main() {
             33,
             10,
             27,
-            36,
-            0,
-            0,
-            27,
             97,
-            48,
+            0,
             27,
             69,
             0,
-            28,
-            46,
             45,
             45,
             45,
@@ -453,12 +643,6 @@ void main() {
             45,
             45,
             10,
-            27,
-            36,
-            0,
-            0,
-            28,
-            46,
             66,
             108,
             111,
@@ -470,12 +654,6 @@ void main() {
             27,
             100,
             3,
-            27,
-            36,
-            0,
-            0,
-            28,
-            46,
             73,
             109,
             97,
@@ -485,9 +663,7 @@ void main() {
             10,
             27,
             97,
-            49,
-            28,
-            46,
+            1,
             27,
             51,
             16,
@@ -508,9 +684,7 @@ void main() {
             0,
             27,
             97,
-            48,
-            28,
-            46,
+            0,
             65,
             32,
             67,
@@ -521,8 +695,6 @@ void main() {
             36,
             22,
             1,
-            28,
-            46,
             65,
             32,
             67,
@@ -534,8 +706,6 @@ void main() {
             36,
             0,
             0,
-            28,
-            46,
             66,
             32,
             67,
@@ -546,8 +716,6 @@ void main() {
             36,
             139,
             0,
-            28,
-            46,
             66,
             32,
             67,
@@ -555,115 +723,16 @@ void main() {
             108,
             50,
             10,
-            27,
-            36,
-            0,
-            0,
-            28,
-            46,
             66,
             121,
             33,
-            10,
-            10,
-            10,
             10,
             10,
             10,
             29,
             86,
-            48
-          ]));
-    });
-
-    test('BytesPrinter (ESC/P 0)', () async {
-      var profile = await CapabilityProfile.load();
-
-      final printer = BytesPrinter(PaperSize.mm80, profile,
-          generator: GeneratorEscP(PaperSize.mm80));
-
-      var doc = _buildPrinterDocument0();
-
-      doc.print(printer);
-
-      var printedBytes = printer.toBytes();
-
-      expect(printedBytes.length, greaterThan(10));
-
-      print(printedBytes);
-
-      expect(
-          printedBytes,
-          equals([
-            27,
-            64,
-            27,
-            80,
-            72,
-            101,
-            108,
-            108,
-            111,
-            10,
-            27,
-            80,
-            87,
-            111,
-            114,
-            108,
-            100,
-            33,
-            10,
-            27,
-            80,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            10,
-            27,
-            74,
-            50,
-            27,
-            80,
-            66,
-            121,
-            33,
-            10,
-            10,
-            10,
-            10,
-            10,
-            10,
-            27,
-            86
+            0,
+            12
           ]));
     });
   });
