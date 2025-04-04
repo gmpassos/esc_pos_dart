@@ -68,6 +68,10 @@ void main() {
           'parameters': ['a']
         },
         {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
           'name': 'text',
           'parameters': ['Hello\n']
         },
@@ -92,8 +96,16 @@ void main() {
           'parameters': ['off']
         },
         {
+          'name': 'align',
+          'parameters': ['center']
+        },
+        {
           'name': 'text',
           'parameters': ['------------------------------------------------\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
         },
         {
           'name': 'feed',
@@ -125,6 +137,9 @@ void main() {
             27,
             77,
             0,
+            27,
+            97,
+            0,
             72,
             101,
             108,
@@ -150,6 +165,9 @@ void main() {
             27,
             69,
             0,
+            27,
+            97,
+            1,
             45,
             45,
             45,
@@ -199,6 +217,9 @@ void main() {
             45,
             45,
             10,
+            27,
+            97,
+            0,
             27,
             100,
             2,
@@ -246,6 +267,10 @@ void main() {
         {
           'name': 'font',
           'parameters': ['a']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
         },
         {
           'name': 'text',
@@ -298,6 +323,10 @@ void main() {
         },
         {'name': 'lines_spacing:1/6'},
         {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
           'name': 'text',
           'parameters': [
             '\n'
@@ -321,6 +350,9 @@ void main() {
             0,
             27,
             77,
+            0,
+            27,
+            97,
             0,
             72,
             101,
@@ -413,6 +445,9 @@ void main() {
             10,
             27,
             50,
+            27,
+            97,
+            0,
             10,
             10,
             29,
@@ -444,66 +479,71 @@ void main() {
       var decodedCommands2 = CommandEscPos.fromJsonList(commandsJson);
       expect(decodedCommands2, decodedCommands);
 
+      //print(JsonEncoder.withIndent('  ').convert(commandsJson));
+
       expect(commandsJson, [
-        {'name': 'reset'},
+        {"name": "reset"},
         {
-          'name': 'table',
-          'parameters': [0]
+          "name": "table",
+          "parameters": [0]
         },
         {
-          'name': 'font',
-          'parameters': ['a']
+          "name": "font",
+          "parameters": ["a"]
         },
         {
-          'name': 'text',
-          'parameters': ['Hello\n']
+          "name": "align",
+          "parameters": ["left"]
         },
         {
-          'name': 'align',
-          'parameters': ['right']
+          "name": "text",
+          "parameters": ["Hello\n"]
         },
         {
-          'name': 'bold',
-          'parameters': ['on']
+          "name": "align",
+          "parameters": ["right"]
         },
         {
-          'name': 'text',
-          'parameters': ['World!\n']
+          "name": "bold",
+          "parameters": ["on"]
         },
         {
-          'name': 'align',
-          'parameters': ['left']
+          "name": "text",
+          "parameters": ["World!\n"]
         },
         {
-          'name': 'bold',
-          'parameters': ['off']
+          "name": "align",
+          "parameters": ["left"]
         },
         {
-          'name': 'text',
-          'parameters': [
-            '------------------------------------------------\n'
-                'Block 2\n'
+          "name": "bold",
+          "parameters": ["off"]
+        },
+        {
+          "name": "text",
+          "parameters": [
+            "------------------------------------------------\nBlock 2\n"
           ]
         },
         {
-          'name': 'feed',
-          'parameters': [3]
+          "name": "feed",
+          "parameters": [3]
         },
         {
-          'name': 'text',
-          'parameters': ['Image:\n']
+          "name": "text",
+          "parameters": ["Image:\n"]
         },
         {
-          'name': 'align',
-          'parameters': ['center']
+          "name": "align",
+          "parameters": ["center"]
         },
         {
-          'name': 'lines_spacing',
-          'parameters': [16]
+          "name": "lines_spacing",
+          "parameters": [16]
         },
         {
-          'name': 'bit_image',
-          'parameters': [
+          "name": "bit_image",
+          "parameters": [
             33,
             1,
             0,
@@ -511,37 +551,37 @@ void main() {
           ]
         },
         {
-          'name': 'text',
-          'parameters': ['\x00\x00\n']
+          "name": "text",
+          "parameters": ["\u0000\u0000\n"]
         },
-        {'name': 'lines_spacing:1/6'},
+        {"name": "lines_spacing:1/6"},
         {
-          'name': 'absolute_pos',
-          'parameters': [0, 0]
-        },
-        {
-          'name': 'align',
-          'parameters': ['left']
+          "name": "align",
+          "parameters": ["left"]
         },
         {
-          'name': 'text',
-          'parameters': ['A Col1']
+          "name": "absolute_pos",
+          "parameters": [0, 0]
         },
         {
-          'name': 'absolute_pos',
-          'parameters': [22, 1]
+          "name": "text",
+          "parameters": ["A Col1"]
         },
         {
-          'name': 'text',
-          'parameters': ['A Col2\n']
+          "name": "absolute_pos",
+          "parameters": [22, 1]
         },
         {
-          'name': 'absolute_pos',
-          'parameters': [0, 0]
+          "name": "text",
+          "parameters": ["A Col2\n"]
         },
         {
-          'name': 'text',
-          'parameters': ['B Col1']
+          "name": "absolute_pos",
+          "parameters": [0, 0]
+        },
+        {
+          "name": "text",
+          "parameters": ["B Col1"]
         },
         {
           "name": "absolute_pos",
@@ -568,6 +608,9 @@ void main() {
             0,
             27,
             77,
+            0,
+            27,
+            97,
             0,
             72,
             101,
@@ -679,11 +722,11 @@ void main() {
             27,
             50,
             27,
-            36,
-            0,
+            97,
             0,
             27,
-            97,
+            36,
+            0,
             0,
             65,
             32,
@@ -750,7 +793,7 @@ PrinterDocument _buildPrinterDocument0() {
       text: 'World!',
       style: PrinterCommandStyle(align: PosAlign.right, bold: true));
 
-  doc.addHR();
+  doc.addHR(style: PrinterCommandStyle(align: PosAlign.center));
 
   doc.addFeed(n: 2);
 
