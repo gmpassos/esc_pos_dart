@@ -302,6 +302,8 @@ class GeneratorEscPos extends Generator {
     bool containsChinese = false,
     int? maxCharsPerLine,
   }) {
+    if (linesAfter < 0) linesAfter = 0;
+
     var bytes = <int>[];
     if (!containsChinese) {
       bytes += _text(
@@ -309,11 +311,14 @@ class GeneratorEscPos extends Generator {
         styles: styles,
         isKanji: containsChinese,
         maxCharsPerLine: maxCharsPerLine,
+        linesAfter: linesAfter + 1,
       );
-      // Ensure at least one line break after the text
-      bytes += emptyLines(linesAfter + 1);
     } else {
-      bytes += _mixedKanji(text, styles: styles, linesAfter: linesAfter);
+      bytes += _mixedKanji(
+        text,
+        styles: styles,
+        linesAfter: linesAfter,
+      );
     }
     return bytes;
   }
@@ -515,9 +520,10 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> image(Image imgSrc, {PosAlign align = PosAlign.center}) {
-    var bytes = <int>[];
+    final globalStyles = this.globalStyles;
+
     // Image alignment
-    bytes += setStyles(PosStyles().copyWith(align: align));
+    var bytes = setStyles(const PosStyles().copyWith(align: align));
 
     final Image image = Image.from(imgSrc); // make a copy
     //const bool highDensityHorizontal = true;
@@ -556,6 +562,10 @@ class GeneratorEscPos extends Generator {
     }
     // Reset line spacing: ESC 2 (HEX: 0x1b 0x32)
     bytes += [27, 50];
+
+    // Rollback styles.
+    bytes += setStyles(globalStyles);
+
     return bytes;
   }
 
@@ -567,9 +577,10 @@ class GeneratorEscPos extends Generator {
     bool highDensityVertical = true,
     PosImageFn imageFn = PosImageFn.bitImageRaster,
   }) {
-    var bytes = <int>[];
+    final globalStyles = this.globalStyles;
+
     // Image alignment
-    bytes += setStyles(PosStyles().copyWith(align: align));
+    var bytes = setStyles(const PosStyles().copyWith(align: align));
 
     final int widthPx = image.width;
     final int heightPx = image.height;
@@ -603,6 +614,10 @@ class GeneratorEscPos extends Generator {
       header2.addAll([48, 50]); // m fn[2,50]
       bytes += List.from(header2);
     }
+
+    // Rollback styles.
+    bytes += setStyles(globalStyles);
+
     return bytes;
   }
 
@@ -615,9 +630,11 @@ class GeneratorEscPos extends Generator {
     BarcodeText textPos = BarcodeText.below,
     PosAlign align = PosAlign.center,
   }) {
+    final globalStyles = this.globalStyles;
+
     var bytes = <int>[];
     // Set alignment
-    bytes += setStyles(PosStyles().copyWith(align: align));
+    bytes += setStyles(const PosStyles().copyWith(align: align));
 
     // Set text position
     bytes += cBarcodeSelectPos.codeUnits + [textPos.value];
@@ -645,6 +662,10 @@ class GeneratorEscPos extends Generator {
       // Function B
       bytes += header + [barcode.data!.length] + barcode.data!;
     }
+
+    // Rollback styles.
+    bytes += setStyles(globalStyles);
+
     return bytes;
   }
 
@@ -655,11 +676,16 @@ class GeneratorEscPos extends Generator {
     QRSize size = QRSize.size4,
     QRCorrection cor = QRCorrection.L,
   }) {
-    var bytes = <int>[];
+    final globalStyles = this.globalStyles;
+
     // Set alignment
-    bytes += setStyles(PosStyles().copyWith(align: align));
+    var bytes = setStyles(const PosStyles().copyWith(align: align));
     QRCode qr = QRCode(text, size, cor);
     bytes += qr.bytes;
+
+    // Rollback styles.
+    bytes += setStyles(globalStyles);
+
     return bytes;
   }
 
@@ -678,10 +704,10 @@ class GeneratorEscPos extends Generator {
     int linesAfter = 0,
     int? maxCharsPerLine,
   }) {
-    var bytes =
-        _text(textBytes, styles: styles, maxCharsPerLine: maxCharsPerLine);
-    // Ensure at least one line break after the text
-    bytes += emptyLines(linesAfter + 1);
+    var bytes = _text(textBytes,
+        styles: styles,
+        maxCharsPerLine: maxCharsPerLine,
+        linesAfter: linesAfter + 1);
     return bytes;
   }
 
@@ -697,6 +723,7 @@ class GeneratorEscPos extends Generator {
     int? colInd,
     bool isKanji = false,
     int colWidth = 12,
+    int? linesAfter,
     int? maxCharsPerLine,
   }) {
     var bytes = <int>[];
@@ -731,8 +758,14 @@ class GeneratorEscPos extends Generator {
       ];
     }
 
-    bytes += setStyles(styles, isKanji: isKanji);
-    bytes += textBytes;
+    bytes += styledBlock(
+      styles,
+      isKanji: isKanji,
+      () => [
+        ...textBytes,
+        if (linesAfter != null) ...emptyLines(linesAfter),
+      ],
+    );
 
     return bytes;
   }
