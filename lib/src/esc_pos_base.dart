@@ -45,7 +45,7 @@ class PrinterDocument {
   PrinterCommand addCut({bool full = true}) =>
       addCommand(PrinterCommandCut(full: full));
 
-  PrinterCommand addImage(Image image, {String align = 'center'}) =>
+  PrinterCommand addImage(Image image, {PosAlign align = PosAlign.center}) =>
       addCommand(PrinterCommandImage(image, align: align));
 
   void print(GenericPrinter printer) {
@@ -432,16 +432,16 @@ class PrinterCommandCut extends PrinterCommand {
 
 class PrinterCommandImage extends PrinterCommand {
   final Image image;
-  final String align;
+  final PosAlign align;
 
-  PrinterCommandImage(this.image, {this.align = 'center'});
+  PrinterCommandImage(this.image, {this.align = PosAlign.center});
 
   PrinterCommandImage.fromBytes(int width, int height, List<int> bytes,
-      {String align = 'center'})
+      {PosAlign align = PosAlign.center})
       : this(Image.fromBytes(width, height, bytes), align: align);
 
   PrinterCommandImage.fromBase64(int width, int height, String bytes,
-      {String align = 'center'})
+      {PosAlign align = PosAlign.center})
       : this.fromBytes(width, height, base64.decode(bytes), align: align);
 
   factory PrinterCommandImage.fromJson(Map<String, dynamic> j) =>
@@ -449,15 +449,14 @@ class PrinterCommandImage extends PrinterCommand {
         j['width'] as int,
         j['height'] as int,
         j['image'] as String,
-        align: j['align'] as String,
+        align: PosAlign.from(j['align'] as String) ?? PosAlign.center,
       );
 
   @override
   PrinterCommandType get type => PrinterCommandType.image;
 
   @override
-  void print(GenericPrinter printer) => printer.image(image,
-      align: PosAlign.values.firstWhere((e) => e.name == align));
+  void print(GenericPrinter printer) => printer.image(image, align: align);
 
   Uint8List toPNG() {
     var bytes = encodePng(image);
@@ -471,11 +470,11 @@ class PrinterCommandImage extends PrinterCommand {
         'type': type.name,
         'width': image.width,
         'height': image.height,
-        'align': align,
+        'align': align.name,
         'image': toPNGBase64(),
       };
 
   @override
   String toString() =>
-      '(image width=${image.width} height=${image.height} align="$align" type="${type.name}")\n';
+      '(image width=${image.width} height=${image.height} align="${align.name}" type="${type.name}")\n';
 }
