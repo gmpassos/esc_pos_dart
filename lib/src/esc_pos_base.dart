@@ -48,16 +48,30 @@ class PrinterDocument {
   PrinterCommand addImage(Image image, {PosAlign align = PosAlign.center}) =>
       addCommand(PrinterCommandImage(image, align: align));
 
-  void print(GenericPrinter printer) {
+  /// Sends the print commands to the given [printer].
+  ///
+  /// This method optionally resets the printer before printing and ends the job
+  /// after all commands have been sent.
+  ///
+  /// - [printer]: The [GenericPrinter] instance to send commands to.
+  /// - [reset]: If `true` (default), calls [printer.reset()] before printing.
+  /// - [endJob]: If `true` (default), calls [printer.endJob()] after printing.
+  ///
+  /// Skips execution if there are no commands.
+  void print(GenericPrinter printer, {bool reset = true, bool endJob = true}) {
     if (commands.isEmpty) return;
 
-    printer.reset();
+    if (reset) {
+      printer.reset();
+    }
 
     for (var c in commands) {
       c.print(printer);
     }
 
-    printer.endJob();
+    if (endJob) {
+      printer.endJob();
+    }
   }
 
   Map<String, dynamic> toJson() => {

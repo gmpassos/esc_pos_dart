@@ -24,6 +24,7 @@
 
 - `PrinterDocument`:
   - `print`:
+    - Added parameters `reset` and `endJob`.
     - Send a `reset` command before start printing.
     - Send a `endJob` command at the end of printing.
   - `addHR`: added parameter `style`.
