@@ -224,8 +224,6 @@ class GeneratorEscPos extends Generator {
       globalStyles = globalStyles.copyWith(codeTable: codeTable);
     }
 
-    if (styles.align != globalStyles.align) {
-      bytes += encodeChars(styles.align == PosAlign.left
     final align = styles.align;
     if (align != null && align != globalStyles.align) {
       bytes += encodeChars(align == PosAlign.left
