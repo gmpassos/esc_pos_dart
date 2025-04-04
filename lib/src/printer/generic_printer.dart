@@ -159,8 +159,12 @@ abstract class GenericPrinter {
     writeBytes(_generator.drawer(pin: pin));
   }
 
-  void hr({String ch = '-', int? len, int linesAfter = 0}) {
-    writeBytes(_generator.hr(ch: ch, linesAfter: linesAfter));
+  void hr(
+      {String ch = '-',
+      int? len,
+      int linesAfter = 0,
+      PosStyles styles = const PosStyles()}) {
+    writeBytes(_generator.hr(ch: ch, linesAfter: linesAfter, styles: styles));
   }
 
   void textEncoded(

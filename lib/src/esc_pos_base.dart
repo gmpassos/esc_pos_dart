@@ -32,8 +32,10 @@ class PrinterDocument {
   }) =>
       addCommand(PrinterCommandText(text, style: style));
 
-  PrinterCommand addHR({String? ch, int? linesAfter}) =>
-      addCommand(PrinterCommandHR(ch: ch, linesAfter: linesAfter));
+  PrinterCommand addHR(
+          {String? ch, int? linesAfter, PrinterCommandStyle? style}) =>
+      addCommand(
+          PrinterCommandHR(ch: ch, linesAfter: linesAfter, style: style));
 
   PrinterCommand addRow(List<PrinterCommandColumn> columns) =>
       addCommand(PrinterCommandRow(columns));
@@ -278,8 +280,9 @@ class PrinterCommandText extends PrinterCommand {
 class PrinterCommandHR extends PrinterCommand {
   final String? ch;
   final int? linesAfter;
+  final PrinterCommandStyle? style;
 
-  PrinterCommandHR({this.ch, this.linesAfter});
+  PrinterCommandHR({this.ch, this.linesAfter, this.style});
 
   factory PrinterCommandHR.fromJson(Map<String, dynamic> j) => PrinterCommandHR(
         ch: j['ch'] as String?,
@@ -291,9 +294,9 @@ class PrinterCommandHR extends PrinterCommand {
 
   @override
   void print(GenericPrinter printer) => printer.hr(
-        ch: ch ?? '-',
-        linesAfter: linesAfter ?? 0,
-      );
+      ch: ch ?? '-',
+      linesAfter: linesAfter ?? 0,
+      styles: style?.toPosStyles() ?? const PosStyles());
 
   @override
   Map<String, dynamic> toJson() => {

@@ -302,10 +302,14 @@ abstract class Generator {
 
   /// Print horizontal full width separator
   /// If [len] is null, then it will be defined according to the paper width
-  List<int> hr({String ch = '-', int? len, int linesAfter = 0}) {
+  List<int> hr(
+      {String ch = '-',
+      int? len,
+      int linesAfter = 0,
+      PosStyles styles = const PosStyles()}) {
     len ??= getMaxCharsPerLine(globalFont);
     var line = ch * len;
-    return text(line);
+    return text(line, styles: styles);
   }
 
   List<int> textEncoded(
