@@ -207,6 +207,30 @@ abstract class Generator {
 
   int getMaxCharsPerLine(PosFontType font);
 
+  /// Temporarily applies [styles], executes [block], and then restores the previous styles.
+  ///
+  /// - [styles] specifies the text formatting options to apply.
+  /// - [block] is a function that generates a list of bytes while the styles are active.
+  /// - [isKanji], if set, adjusts encoding for Kanji characters.
+  ///
+  /// This method ensures that the styles set before calling [block] are restored afterward.
+  ///
+  /// Returns a list of bytes representing the styled content.
+  List<int> styledBlock(PosStyles styles, List<int> Function() block,
+      {bool? isKanji}) {
+    final globalStyles = this.globalStyles;
+    var stylesBytes = setStyles(styles, isKanji: isKanji ?? false);
+    var blockBytes = block();
+    var stylesBytes2 = setStyles(globalStyles);
+    return [...stylesBytes, ...blockBytes, ...stylesBytes2];
+  }
+
+  /// Applies the given [styles] as the global text formatting style.
+  ///
+  /// - [styles] specifies the font, alignment, bold, underline, and other text attributes.
+  /// - [isKanji], when `true`, adjusts encoding for Kanji characters.
+  ///
+  /// This method updates the global style settings and returns the corresponding byte sequence.
   List<int> setStyles(PosStyles styles, {bool isKanji = false});
 
   /// Sens raw command(s)
