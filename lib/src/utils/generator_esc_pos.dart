@@ -157,7 +157,7 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> reset() {
-    globalStyles = PosStyles();
+    globalStyles = const PosStyles();
     var bytes = cInit.codeUnits;
     bytes += setGlobalCodeTable(codeTable);
     bytes += setFont(globalFont);
@@ -211,65 +211,72 @@ class GeneratorEscPos extends Generator {
   }
 
   @override
-  List<int> setStyles(PosStyles styles, {bool? isKanji}) {
+  List<int> setStyles(PosStyles styles, {bool isKanji = false}) {
     var bytes = <int>[];
 
     // Set local code table
-    if (styles.codeTable != null &&
-        globalStyles.codeTable != styles.codeTable) {
-      bytes += Uint8List.fromList(
-        List.from(cCodeTable.codeUnits)
-          ..add(_profile.getCodePageId(styles.codeTable)),
-      );
-      globalStyles = globalStyles.copyWith(codeTable: styles.codeTable);
+    final codeTable = styles.codeTable;
+    if (codeTable != null && globalStyles.codeTable != codeTable) {
+      bytes += [
+        ...cCodeTable.codeUnits,
+        _profile.getCodePageId(codeTable),
+      ];
+      globalStyles = globalStyles.copyWith(codeTable: codeTable);
     }
 
     if (styles.align != globalStyles.align) {
       bytes += encodeChars(styles.align == PosAlign.left
+    final align = styles.align;
+    if (align != null && align != globalStyles.align) {
+      bytes += encodeChars(align == PosAlign.left
           ? cAlignLeft
-          : (styles.align == PosAlign.center ? cAlignCenter : cAlignRight));
-      globalStyles = globalStyles.copyWith(align: styles.align);
+          : (align == PosAlign.center ? cAlignCenter : cAlignRight));
+      globalStyles = globalStyles.copyWith(align: align);
     }
 
-    if (styles.bold != globalStyles.bold) {
-      bytes += (styles.bold ? cBoldOn : cBoldOff).codeUnits;
-      globalStyles = globalStyles.copyWith(bold: styles.bold);
+    final bold = styles.bold;
+    if (bold != globalStyles.bold) {
+      bytes += (bold ? cBoldOn : cBoldOff).codeUnits;
+      globalStyles = globalStyles.copyWith(bold: bold);
     }
 
-    if (styles.turn90 != globalStyles.turn90) {
-      bytes += (styles.turn90 ? cTurn90On : cTurn90Off).codeUnits;
-      globalStyles = globalStyles.copyWith(turn90: styles.turn90);
+    final turn90 = styles.turn90;
+    if (turn90 != globalStyles.turn90) {
+      bytes += (turn90 ? cTurn90On : cTurn90Off).codeUnits;
+      globalStyles = globalStyles.copyWith(turn90: turn90);
     }
 
-    if (styles.reverse != globalStyles.reverse) {
-      bytes += (styles.reverse ? cReverseOn : cReverseOff).codeUnits;
-      globalStyles = globalStyles.copyWith(reverse: styles.reverse);
+    final reverse = styles.reverse;
+    if (reverse != globalStyles.reverse) {
+      bytes += (reverse ? cReverseOn : cReverseOff).codeUnits;
+      globalStyles = globalStyles.copyWith(reverse: reverse);
     }
 
-    if (styles.underline != globalStyles.underline) {
-      bytes += (styles.underline ? cUnderline1dot : cUnderlineOff).codeUnits;
-      globalStyles = globalStyles.copyWith(underline: styles.underline);
+    final underline = styles.underline;
+    if (underline != globalStyles.underline) {
+      bytes += (underline ? cUnderline1dot : cUnderlineOff).codeUnits;
+      globalStyles = globalStyles.copyWith(underline: underline);
     }
 
     // Set font
-    if (styles.fontType != null && styles.fontType != globalStyles.fontType) {
-      bytes +=
-          (styles.fontType == PosFontType.fontB ? cFontB : cFontA).codeUnits;
-      globalStyles = globalStyles.copyWith(fontType: styles.fontType);
+    final fontType = styles.fontType;
+    if (fontType != null && fontType != globalStyles.fontType) {
+      bytes += (fontType == PosFontType.fontB ? cFontB : cFontA).codeUnits;
+      globalStyles = globalStyles.copyWith(fontType: fontType);
     }
 
     // Characters size
-    if (styles.height.value != globalStyles.height.value ||
-        styles.width.value != globalStyles.width.value) {
-      bytes += Uint8List.fromList(
-        List.from(cSizeGSn.codeUnits)
-          ..add(PosTextSize.decSize(styles.height, styles.width)),
-      );
-      globalStyles =
-          globalStyles.copyWith(height: styles.height, width: styles.width);
+    final height = styles.height;
+    final width = styles.width;
+    if (height.value != globalStyles.height.value ||
+        width.value != globalStyles.width.value) {
+      bytes += [
+        ...cSizeGSn.codeUnits,
+        PosTextSize.decSize(height, width),
+      ];
+      globalStyles = globalStyles.copyWith(height: height, width: width);
     }
 
-    isKanji ??= styles.isKanji;
     if (globalStyles.isKanji != isKanji) {
       // Set Kanji mode:
       bytes += (isKanji ? cKanjiOn : cKanjiOff).codeUnits;
