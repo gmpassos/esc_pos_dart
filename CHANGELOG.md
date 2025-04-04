@@ -3,12 +3,18 @@
 - Converted to Dart enums:
   - `PaperSize`, `PosTextSize`, `PosBeepDuration`.
 
+- `PosStyles`:
+  - `align` nullable.
+  - `fontType` nullable.
+
 - `Generator` now is a base class.
   - Added fields `newLine` and `normalizeNewLines`.
   - Renamed `setGlobalFont` to `setFont`.
+  - Added `styledBlock`.
   - `cut`: parameter `extraLines = 2`.
   - `globalFont` now is a getter to `globalStyles.fontType ?? PosFontType.fontA`.
   - Implementation: `GeneratorEscPos` (ESC/POS)
+    - Ensure that command styles won't affect global style.
 
 - New `Decoder` and `DecoderEscPos`.
 
@@ -20,6 +26,7 @@
   - `print`:
     - Send a `reset` command before start printing.
     - Send a `endJob` command at the end of printing.
+  - `addHR`: added parameter `style`.
 
 - collection: ^1.19.0
 - lints: ^5.1.1
