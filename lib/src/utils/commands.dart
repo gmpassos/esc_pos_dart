@@ -17,8 +17,8 @@ const cBeep = '${esc}B'; // Beeper [count] [duration]
 const cEndJob = ff; // Initialize printer
 
 // Mech. Control
-const cCutFull = '${gs}V0'; // Full cut
-const cCutPart = '${gs}V1'; // Partial cut
+const cCutFull = '${gs}V\x00'; // Full cut
+const cCutPart = '${gs}V\x01'; // Partial cut
 
 // Transmission of Status
 const cTransmissionOfStatus = '${gs}r'; // Full cut
@@ -42,9 +42,9 @@ const cKanjiOn = '$fs&'; // Select Kanji character mode
 const cKanjiOff = '$fs.'; // Cancel Kanji character mode
 
 // Print Position
-const cAlignLeft = '${esc}a0'; // Left justification
-const cAlignCenter = '${esc}a1'; // Centered
-const cAlignRight = '${esc}a2'; // Right justification
+const cAlignLeft = '${esc}a\x00'; // Left justification
+const cAlignCenter = '${esc}a\x01'; // Centered
+const cAlignRight = '${esc}a\x02'; // Right justification
 const cPos = '$esc\$'; // Set absolute print position [nL] [nH]
 
 // Print

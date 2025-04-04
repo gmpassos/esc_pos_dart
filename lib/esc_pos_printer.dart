@@ -5,7 +5,7 @@
 ///
 /// Copyright (c) 2019-2020. All rights reserved.
 /// See LICENSE for distribution and usage details.
-library esc_pos_dart.printer;
+library;
 
 export 'src/printer/enums.dart';
 export 'src/printer/generic_printer.dart';
