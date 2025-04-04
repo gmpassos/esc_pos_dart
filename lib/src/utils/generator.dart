@@ -236,6 +236,16 @@ abstract class Generator {
   /// Sens raw command(s)
   List<int> rawBytes(List<int> cmd, {bool isKanji = false});
 
+  /// Encodes and processes a text string for printing.
+  ///
+  /// - [text] is the string to be printed.
+  /// - [styles] defines the text formatting options (e.g., bold, underline).
+  /// - [linesAfter] specifies the number of blank lines to append after the text.
+  /// - [containsChinese], when `true`, ensures proper encoding for Chinese characters.
+  /// - [maxCharsPerLine], if set, limits the number of characters per line.
+  ///
+  /// See also:
+  /// - [textEncoded] for processing pre-encoded text.
   List<int> text(
     String text, {
     PosStyles styles = const PosStyles(),
@@ -336,6 +346,17 @@ abstract class Generator {
     return text(line, styles: styles);
   }
 
+  /// Processes encoded text bytes for printing.
+  ///
+  /// This method functions like [text], but instead of receiving a raw string,
+  /// it takes pre-encoded text as [textBytes].
+  ///
+  /// - [styles] defines the text formatting options.
+  /// - [linesAfter] specifies the number of blank lines to append after the text.
+  /// - [maxCharsPerLine], if set, limits the number of characters per line.
+  ///
+  /// See also:
+  /// - [text] for processing unencoded text input.
   List<int> textEncoded(
     Uint8List textBytes, {
     PosStyles styles = const PosStyles(),
