@@ -15,6 +15,7 @@ import '../utils/barcode.dart';
 import '../utils/capability_profile.dart';
 import '../utils/enums.dart';
 import '../utils/generator.dart';
+import '../utils/generator_esc_pos.dart';
 import '../utils/pos_column.dart';
 import '../utils/pos_styles.dart';
 import '../utils/qrcode.dart';
@@ -26,9 +27,11 @@ abstract class GenericPrinter {
 
   late final Generator _generator;
 
-  GenericPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5})
-      : _generator =
-            Generator(_paperSize, _profile, spaceBetweenRows: spaceBetweenRows);
+  GenericPrinter(this._paperSize, this._profile,
+      {int spaceBetweenRows = 5, Generator? generator})
+      : _generator = generator ??
+            GeneratorEscPos(_paperSize, _profile,
+                spaceBetweenRows: spaceBetweenRows);
 
   Generator get generator => _generator;
 
@@ -66,8 +69,7 @@ abstract class GenericPrinter {
   }
 
   void setGlobalFont(PosFontType font, {int? maxCharsPerLine}) {
-    writeBytes(
-        _generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
+    writeBytes(_generator.setFont(font, maxCharsPerLine: maxCharsPerLine));
   }
 
   void setStyles(PosStyles styles, {bool isKanji = false}) {
@@ -157,8 +159,12 @@ abstract class GenericPrinter {
     writeBytes(_generator.drawer(pin: pin));
   }
 
-  void hr({String ch = '-', int? len, int linesAfter = 0}) {
-    writeBytes(_generator.hr(ch: ch, linesAfter: linesAfter));
+  void hr(
+      {String ch = '-',
+      int? len,
+      int linesAfter = 0,
+      PosStyles styles = const PosStyles()}) {
+    writeBytes(_generator.hr(ch: ch, linesAfter: linesAfter, styles: styles));
   }
 
   void textEncoded(
@@ -181,7 +187,8 @@ abstract class GenericPrinter {
 /// A virtual ESC/POS printer that stores printed data in an internal buffer.
 /// The stored data can be retrieved using [toBytes].
 class BytesPrinter extends GenericPrinter {
-  BytesPrinter(super.paperSize, super.profile, {super.spaceBetweenRows});
+  BytesPrinter(super.paperSize, super.profile,
+      {super.spaceBetweenRows, super.generator});
 
   final BytesBuilder _bytesBuilder = BytesBuilder();
 

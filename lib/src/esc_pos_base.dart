@@ -32,8 +32,10 @@ class PrinterDocument {
   }) =>
       addCommand(PrinterCommandText(text, style: style));
 
-  PrinterCommand addHR({String? ch, int? linesAfter}) =>
-      addCommand(PrinterCommandHR(ch: ch, linesAfter: linesAfter));
+  PrinterCommand addHR(
+          {String? ch, int? linesAfter, PrinterCommandStyle? style}) =>
+      addCommand(
+          PrinterCommandHR(ch: ch, linesAfter: linesAfter, style: style));
 
   PrinterCommand addRow(List<PrinterCommandColumn> columns) =>
       addCommand(PrinterCommandRow(columns));
@@ -43,12 +45,32 @@ class PrinterDocument {
   PrinterCommand addCut({bool full = true}) =>
       addCommand(PrinterCommandCut(full: full));
 
-  PrinterCommand addImage(Image image, {String align = 'center'}) =>
+  PrinterCommand addImage(Image image, {PosAlign align = PosAlign.center}) =>
       addCommand(PrinterCommandImage(image, align: align));
 
-  void print(GenericPrinter printer) {
+  /// Sends the print commands to the given [printer].
+  ///
+  /// This method optionally resets the printer before printing and ends the job
+  /// after all commands have been sent.
+  ///
+  /// - [printer]: The [GenericPrinter] instance to send commands to.
+  /// - [reset]: If `true` (default), calls [printer.reset()] before printing.
+  /// - [endJob]: If `true` (default), calls [printer.endJob()] after printing.
+  ///
+  /// Skips execution if there are no commands.
+  void print(GenericPrinter printer, {bool reset = true, bool endJob = true}) {
+    if (commands.isEmpty) return;
+
+    if (reset) {
+      printer.reset();
+    }
+
     for (var c in commands) {
       c.print(printer);
+    }
+
+    if (endJob) {
+      printer.endJob();
     }
   }
 
@@ -120,10 +142,10 @@ class PrinterCommandStyle {
   final bool reverse;
   final bool underline;
   final bool turn90;
-  final String align;
+  final PosAlign align;
   final int width;
   final int height;
-  final String fontType;
+  final PosFontType fontType;
   final String codeTable;
 
   PrinterCommandStyle(
@@ -131,10 +153,10 @@ class PrinterCommandStyle {
       this.reverse = false,
       this.underline = false,
       this.turn90 = false,
-      this.align = 'left',
+      this.align = PosAlign.left,
       this.width = 1,
       this.height = 1,
-      this.fontType = 'a',
+      this.fontType = PosFontType.fontA,
       this.codeTable = 'CP437'});
 
   factory PrinterCommandStyle.fromJson(Map<String, dynamic> j) =>
@@ -143,10 +165,10 @@ class PrinterCommandStyle {
         reverse: j['reverse'] as bool? ?? false,
         underline: j['underline'] as bool? ?? false,
         turn90: j['turn90'] as bool? ?? false,
-        align: j['align'] as String? ?? 'left',
+        align: PosAlign.from(j['align']) ?? PosAlign.left,
         width: j['width'] as int? ?? 1,
         height: j['height'] as int? ?? 1,
-        fontType: j['fontType'] as String? ?? 'a',
+        fontType: PosFontType.from(j['fontType']) ?? PosFontType.fontA,
         codeTable: j['codeTable'] as String? ?? 'CP437',
       );
 
@@ -157,10 +179,10 @@ class PrinterCommandStyle {
         if (reverse) 'reverse': reverse,
         if (underline) 'underline': underline,
         if (turn90) 'turn90': turn90,
-        if (align != 'left') 'align': align,
+        if (align != PosAlign.left) 'align': align.name,
         if (width != 1) 'width': width,
         if (height != 1) 'height': height,
-        if (fontType != 'a') 'fontType': fontType,
+        if (fontType != PosFontType.fontA) 'fontType': fontType.valueName,
         if (codeTable != 'CP437') 'codeTable': codeTable,
       };
 
@@ -169,10 +191,10 @@ class PrinterCommandStyle {
         reverse: reverse,
         underline: underline,
         turn90: turn90,
-        align: PosAlign.values.firstWhere((e) => e.name == align),
+        align: align,
         width: getPosTextSize(width),
         height: getPosTextSize(height),
-        fontType: fontType == 'b' ? PosFontType.fontB : PosFontType.fontA,
+        fontType: fontType,
         codeTable: codeTable,
       );
 
@@ -272,8 +294,9 @@ class PrinterCommandText extends PrinterCommand {
 class PrinterCommandHR extends PrinterCommand {
   final String? ch;
   final int? linesAfter;
+  final PrinterCommandStyle? style;
 
-  PrinterCommandHR({this.ch, this.linesAfter});
+  PrinterCommandHR({this.ch, this.linesAfter, this.style});
 
   factory PrinterCommandHR.fromJson(Map<String, dynamic> j) => PrinterCommandHR(
         ch: j['ch'] as String?,
@@ -285,9 +308,9 @@ class PrinterCommandHR extends PrinterCommand {
 
   @override
   void print(GenericPrinter printer) => printer.hr(
-        ch: ch ?? '-',
-        linesAfter: linesAfter ?? 0,
-      );
+      ch: ch ?? '-',
+      linesAfter: linesAfter ?? 0,
+      styles: style?.toPosStyles() ?? const PosStyles());
 
   @override
   Map<String, dynamic> toJson() => {
@@ -423,16 +446,16 @@ class PrinterCommandCut extends PrinterCommand {
 
 class PrinterCommandImage extends PrinterCommand {
   final Image image;
-  final String align;
+  final PosAlign align;
 
-  PrinterCommandImage(this.image, {this.align = 'center'});
+  PrinterCommandImage(this.image, {this.align = PosAlign.center});
 
   PrinterCommandImage.fromBytes(int width, int height, List<int> bytes,
-      {String align = 'center'})
+      {PosAlign align = PosAlign.center})
       : this(Image.fromBytes(width, height, bytes), align: align);
 
   PrinterCommandImage.fromBase64(int width, int height, String bytes,
-      {String align = 'center'})
+      {PosAlign align = PosAlign.center})
       : this.fromBytes(width, height, base64.decode(bytes), align: align);
 
   factory PrinterCommandImage.fromJson(Map<String, dynamic> j) =>
@@ -440,15 +463,14 @@ class PrinterCommandImage extends PrinterCommand {
         j['width'] as int,
         j['height'] as int,
         j['image'] as String,
-        align: j['align'] as String,
+        align: PosAlign.from(j['align'] as String) ?? PosAlign.center,
       );
 
   @override
   PrinterCommandType get type => PrinterCommandType.image;
 
   @override
-  void print(GenericPrinter printer) => printer.image(image,
-      align: PosAlign.values.firstWhere((e) => e.name == align));
+  void print(GenericPrinter printer) => printer.image(image, align: align);
 
   Uint8List toPNG() {
     var bytes = encodePng(image);
@@ -462,11 +484,11 @@ class PrinterCommandImage extends PrinterCommand {
         'type': type.name,
         'width': image.width,
         'height': image.height,
-        'align': align,
+        'align': align.name,
         'image': toPNGBase64(),
       };
 
   @override
   String toString() =>
-      '(image width=${image.width} height=${image.height} align="$align" type="${type.name}")\n';
+      '(image width=${image.width} height=${image.height} align="${align.name}" type="${type.name}")\n';
 }
