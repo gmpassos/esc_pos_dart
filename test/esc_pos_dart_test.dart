@@ -117,6 +117,7 @@ void main() {
             'By!\n'
                 '\n'
                 '\n'
+                '\n'
           ]
         },
         {
@@ -229,6 +230,7 @@ void main() {
             10,
             10,
             10,
+            10,
             29,
             86,
             0,
@@ -330,6 +332,7 @@ void main() {
           'name': 'text',
           'parameters': [
             '\n'
+                '\n'
                 '\n'
           ]
         },
@@ -448,6 +451,7 @@ void main() {
             27,
             97,
             0,
+            10,
             10,
             10,
             29,
@@ -589,7 +593,7 @@ void main() {
         },
         {
           "name": "text",
-          "parameters": ["B Col2\nBy!\n\n\n"]
+          "parameters": ["B Col2\nBy!\n\n\n\n"]
         },
         {
           "name": "cut",
@@ -769,6 +773,7 @@ void main() {
             66,
             121,
             33,
+            10,
             10,
             10,
             10,

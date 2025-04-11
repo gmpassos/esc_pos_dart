@@ -1,3 +1,8 @@
+## 1.1.1
+
+- `Generator`:
+  - `cut`: rollback default value for `extraLines` to `3`. Most printers need at least 3 extra lines.
+
 ## 1.1.0
 
 - Converted to Dart enums:
