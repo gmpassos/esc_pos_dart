@@ -301,6 +301,9 @@ class PrinterCommandHR extends PrinterCommand {
   factory PrinterCommandHR.fromJson(Map<String, dynamic> j) => PrinterCommandHR(
         ch: j['ch'] as String?,
         linesAfter: j['linesAfter'] as int?,
+        style: j['style'] != null
+            ? PrinterCommandStyle.fromJson(j['style'])
+            : null,
       );
 
   @override
@@ -317,6 +320,7 @@ class PrinterCommandHR extends PrinterCommand {
         'type': type.name,
         if (ch != null) 'ch': ch,
         if (linesAfter != null) 'linesAfter': linesAfter,
+        if (style != null) 'style': style!.toJson(),
       };
 
   @override
