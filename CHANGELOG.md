@@ -8,6 +8,13 @@
 - `GeneratorEscPos`:
   - Consider character margin for max characters per line.
 
+- `PrinterCommandHR`:
+  - Fix JSON: add parameter `style`.
+
+- `PrinterCommandImage`:
+  - Added `decodeImage`.
+  - Fix JSON: add parameter `mimeType`.
+
 ## 1.1.1
 
 - `Generator`:
