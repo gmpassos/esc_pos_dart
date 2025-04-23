@@ -1,3 +1,13 @@
+## 1.1.2
+
+- `Generator`:
+  - Fix `getCharsPerLine` to use `styles.fontType`.
+  - `cut`: change parameter to `extraLines = 4`.
+  - `hr`: fix call to `getMaxCharsPerLine` to use `styles.fontType ?? globalFont`.
+
+- `GeneratorEscPos`:
+  - Consider character margin for max characters per line.
+
 ## 1.1.1
 
 - `Generator`:

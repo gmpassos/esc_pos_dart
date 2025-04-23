@@ -202,11 +202,16 @@ class GeneratorEscPos extends Generator {
 
   @override
   int getMaxCharsPerLine(PosFontType? font) {
+    // Characters per line - margin:
     switch (paperSize) {
       case PaperSize.mm58:
-        return (font == null || font == PosFontType.fontA) ? 32 : 42;
+        return (font == null || font == PosFontType.fontA)
+            ? (32 - 6)
+            : (42 - 8);
       case PaperSize.mm80:
-        return (font == null || font == PosFontType.fontA) ? 48 : 64;
+        return (font == null || font == PosFontType.fontA)
+            ? (48 - 6)
+            : (64 - 8);
     }
   }
 
@@ -342,7 +347,7 @@ class GeneratorEscPos extends Generator {
   }
 
   @override
-  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 3}) {
+  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 4}) {
     var bytes = emptyLines(extraLines);
     switch (mode) {
       case PosCutMode.partial:

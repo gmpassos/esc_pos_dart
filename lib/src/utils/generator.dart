@@ -174,18 +174,8 @@ abstract class Generator {
 
   /// Calculates the average character width based on [styles] and [maxCharsPerLine].
   int getCharsPerLine(PosStyles styles, int? maxCharsPerLine) {
-    int charsPerLine;
-    if (maxCharsPerLine != null) {
-      charsPerLine = maxCharsPerLine;
-    } else {
-      var fontType = styles.fontType;
-      if (fontType != null) {
-        charsPerLine = getMaxCharsPerLine(fontType);
-      } else {
-        charsPerLine = maxCharsPerLine ??
-            getMaxCharsPerLine(fontType ?? PosFontType.fontA);
-      }
-    }
+    var fontType = styles.fontType ?? globalFont;
+    var charsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(fontType);
     return charsPerLine;
   }
 
@@ -267,7 +257,7 @@ abstract class Generator {
   /// Cut the paper
   ///
   /// [mode] is used to define the full or partial cut (if supported by the priner)
-  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 3});
+  List<int> cut({PosCutMode mode = PosCutMode.full, int extraLines = 4});
 
   /// Request transmission of printer status.
   List<int> transmissionOfStatus({int n = 1});
@@ -341,7 +331,8 @@ abstract class Generator {
       int? len,
       int linesAfter = 0,
       PosStyles styles = const PosStyles()}) {
-    len ??= getMaxCharsPerLine(globalFont);
+    var font = styles.fontType ?? globalFont;
+    len ??= getMaxCharsPerLine(font);
     var line = ch * len;
     return text(line, styles: styles);
   }
