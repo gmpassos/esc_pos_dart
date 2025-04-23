@@ -9,8 +9,9 @@ void main() {
     test('toJson', () {
       var doc = _buildPrinterDocument1();
 
+      var json1 = doc.toJson();
       expect(
-          doc.toJson(),
+          json1,
           equals(
             {
               'commands': [
@@ -27,12 +28,22 @@ void main() {
                   'height': 1,
                   'align': 'center',
                   'image':
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWP5z8DwHwAFFAIDECIziQAAAABJRU5ErkJggg=='
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWP5z8DwHwAFFAIDECIziQAAAABJRU5ErkJggg==',
+                  'mimeType': 'image/png',
+                },
+                {
+                  'type': 'hr',
+                  'style': {'fontType': 'b'}
                 },
                 {'type': 'cut', 'full': true}
               ]
             },
           ));
+
+      var doc2 = PrinterDocument.fromJson(json1);
+
+      var json2 = doc2.toJson();
+      expect(json2, equals(json1));
     });
 
     test('BytesPrinter (ESC/POS 0)', () async {
@@ -325,6 +336,20 @@ void main() {
           'parameters': ['left']
         },
         {
+          'name': 'font',
+          'parameters': ['b']
+        },
+        {
+          'name': 'text',
+          'parameters': [
+            '--------------------------------------------------------\n'
+          ]
+        },
+        {
+          'name': 'font',
+          'parameters': ['a']
+        },
+        {
           'name': 'text',
           'parameters': [
             '\n'
@@ -441,6 +466,69 @@ void main() {
             50,
             27,
             97,
+            0,
+            27,
+            77,
+            1,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            10,
+            27,
+            77,
             0,
             10,
             10,
@@ -774,9 +862,6 @@ void main() {
 }
 
 PrinterDocument _buildPrinterDocument0() {
-  var image = Image(1, 1);
-  image.setPixel(0, 0, 0xFF0000FF);
-
   var doc = PrinterDocument();
 
   doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
@@ -810,6 +895,8 @@ PrinterDocument _buildPrinterDocument1() {
   doc.addHR();
 
   doc.addImage(image);
+
+  doc.addHR(style: PrinterCommandStyle(fontType: PosFontType.fontB));
 
   doc.addCut();
   return doc;
