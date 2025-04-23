@@ -455,20 +455,46 @@ class PrinterCommandImage extends PrinterCommand {
   PrinterCommandImage(this.image, {this.align = PosAlign.center});
 
   PrinterCommandImage.fromBytes(int width, int height, List<int> bytes,
-      {PosAlign align = PosAlign.center})
-      : this(Image.fromBytes(width, height, bytes), align: align);
+      {String? mimeType, PosAlign align = PosAlign.center})
+      : this(decodeImage(width, height, bytes, mimeType: mimeType),
+            align: align);
 
   PrinterCommandImage.fromBase64(int width, int height, String bytes,
-      {PosAlign align = PosAlign.center})
-      : this.fromBytes(width, height, base64.decode(bytes), align: align);
+      {String? mimeType, PosAlign align = PosAlign.center})
+      : this.fromBytes(width, height, base64.decode(bytes),
+            align: align, mimeType: mimeType);
 
   factory PrinterCommandImage.fromJson(Map<String, dynamic> j) =>
       PrinterCommandImage.fromBase64(
         j['width'] as int,
         j['height'] as int,
         j['image'] as String,
+        mimeType: j['mimeType'] as String,
         align: PosAlign.from(j['align'] as String) ?? PosAlign.center,
       );
+
+  static Image decodeImage(int width, int height, List<int> bytes,
+      {String? mimeType}) {
+    switch (mimeType?.trim().toLowerCase()) {
+      case 'image/png':
+      case 'png':
+        {
+          return PngDecoder().decodeImage(bytes) ??
+              (throw ArgumentError("Can't decode PNG image!"));
+        }
+      case 'image/jpeg':
+      case 'jpeg':
+      case 'jpg':
+        {
+          return JpegDecoder().decodeImage(bytes) ??
+              (throw ArgumentError("Can't decode JPEG image!"));
+        }
+      default:
+        {
+          return Image.fromBytes(width, height, bytes);
+        }
+    }
+  }
 
   @override
   PrinterCommandType get type => PrinterCommandType.image;
@@ -490,6 +516,7 @@ class PrinterCommandImage extends PrinterCommand {
         'height': image.height,
         'align': align.name,
         'image': toPNGBase64(),
+        'mimeType': 'image/png',
       };
 
   @override
