@@ -1,3 +1,13 @@
+## 1.1.3
+
+- `DecoderEscPos`:
+  - Fix decoding of Bit Image, calculating the correct data length.
+
+- `CommandEscPosBitImage`:
+  - Added field `lineBreak`.
+
+- coverage: ^1.13.1
+
 ## 1.1.2
 
 - `Generator`:

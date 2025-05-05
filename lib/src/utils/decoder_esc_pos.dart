@@ -154,6 +154,15 @@ class DecoderEscPos extends Decoder {
                 }
               case _escBitImage:
                 {
+                  /*
+                  | m  | Mode                   | Vertical NO. of Dots | Vertical Direction Dot Density | Horizontal Dot Density | Direction Number of Data (K) |
+                  |----|------------------------|----------------------|--------------------------------|------------------------|------------------------------|
+                  | 0  | 8-dot single-density   | 8                    | 60 DPI                         | 90 DPI                 | nL + nH × 256                |
+                  | 1  | 8-dot double-density   | 8                    | 60 DPI                         | 180 DPI                | nL + nH × 256                |
+                  | 32 | 24-dot single-density  | 24                   | 180 DPI                        | 90 DPI                 | (nL + nH × 256) × 3          |
+                  | 33 | 24-dot double-density  | 24                   | 180 DPI                        | 180 DPI                | (nL + nH × 256) × 3          |
+                  [dpi : dots per 25.4 mm]
+                   */
                   var mode = serial[(offset + consumed)];
                   ++consumed;
 
@@ -163,13 +172,28 @@ class DecoderEscPos extends Decoder {
                   var nH = serial[(offset + consumed)];
                   ++consumed;
 
-                  var dataLength = ((nL + (256 * nH)) / 8).ceil();
+                  var dataLength =
+                      mode <= 1 ? (nL + (nH * 256)) : ((nL + (nH * 256)) * 3);
 
                   var imgInit = offset + consumed;
                   var imgData = serial.sublist(imgInit, imgInit + dataLength);
                   consumed += dataLength;
 
-                  _output.add(CommandEscPosBitImage(mode, nL, nH, imgData));
+                  var nextByte = serial[offset + consumed];
+
+                  var lineBreak = false;
+                  if (nextByte == 10) {
+                    lineBreak = true;
+                    ++consumed;
+                  }
+
+                  _output.add(CommandEscPosBitImage(
+                    mode,
+                    nL,
+                    nH,
+                    imgData,
+                    lineBreak: lineBreak,
+                  ));
                 }
               default:
                 throw FormatException("Unknown ESC char: $c1");
@@ -419,11 +443,14 @@ class CommandEscPosBitImage extends CommandEscPos {
 
   final List<int> data;
 
-  CommandEscPosBitImage(this.mode, this.nL, this.nH, this.data)
+  final bool lineBreak;
+
+  CommandEscPosBitImage(this.mode, this.nL, this.nH, this.data,
+      {this.lineBreak = false})
       : super('bit_image');
 
   @override
-  List get parameters => [mode, nL, nH, data];
+  List get parameters => [mode, nL, nH, data, lineBreak];
 
   factory CommandEscPosBitImage.fromJson(Map json) {
     var parameters = json["parameters"] as List?;
@@ -436,7 +463,9 @@ class CommandEscPosBitImage extends CommandEscPos {
     var dataList = parameters[3] as List;
     var data = dataList.whereType<num>().map((e) => e.toInt()).toList();
 
-    return CommandEscPosBitImage(mode, nL, nH, data);
+    var lineBreak = parameters.length > 4 ? parameters[4] as bool : false;
+
+    return CommandEscPosBitImage(mode, nL, nH, data, lineBreak: lineBreak);
   }
 }
 
