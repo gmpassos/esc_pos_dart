@@ -179,12 +179,26 @@ class DecoderEscPos extends Decoder {
                   var imgData = serial.sublist(imgInit, imgInit + dataLength);
                   consumed += dataLength;
 
-                  var nextByte = serial[offset + consumed];
-
                   var lineBreak = false;
-                  if (nextByte == 10) {
-                    lineBreak = true;
-                    ++consumed;
+
+                  var nextBytePos = offset + consumed;
+                  if (nextBytePos < serial.length) {
+                    var nextByte = serial[nextBytePos];
+
+                    if (nextByte == 13) {
+                      lineBreak = true;
+                      ++consumed;
+
+                      ++nextBytePos;
+                      if (nextBytePos < serial.length) {
+                        nextByte = serial[nextBytePos];
+                      }
+                    }
+
+                    if (nextByte == 10) {
+                      lineBreak = true;
+                      ++consumed;
+                    }
                   }
 
                   _output.add(CommandEscPosBitImage(
