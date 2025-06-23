@@ -64,6 +64,8 @@ class GeneratorEscPos extends Generator {
     return res;
   }
 
+  static final _colorRGBABlack = ColorRgba8(0, 0, 0, 255);
+
   /// Extract slices of an image as equal-sized blobs of column-format data.
   ///
   /// [image] Image to extract from
@@ -77,17 +79,20 @@ class GeneratorEscPos extends Generator {
 
     // Create a black bottom layer
     final biggerImage = copyResize(image, width: widthPx, height: heightPx);
-    fill(biggerImage, 0);
+
+    fill(biggerImage, color: _colorRGBABlack);
 
     // Insert source image into bigger one
-    drawImage(biggerImage, image, dstX: 0, dstY: 0);
+    compositeImage(biggerImage, image, dstX: 0, dstY: 0);
 
     var left = 0;
     final blobs = <List<int>>[];
 
     while (left < widthPx) {
-      final slice = copyCrop(biggerImage, left, 0, lineHeight, heightPx);
-      final bytes = slice.getBytes(format: Format.luminance);
+      final slice = copyCrop(biggerImage,
+          x: left, y: 0, width: lineHeight, height: heightPx);
+      final sliceGrayScale = grayscale(slice);
+      final bytes = sliceGrayScale.getBytes(order: ChannelOrder.red);
       blobs.add(bytes);
       left += lineHeight;
     }
@@ -106,7 +111,7 @@ class GeneratorEscPos extends Generator {
 
     // R/G/B channels are same -> keep only one channel
     final oneChannelBytes = <int>[];
-    final buffer = image.getBytes(format: Format.rgba);
+    final buffer = image.getBytes(order: ChannelOrder.rgba);
     for (int i = 0; i < buffer.length; i += 4) {
       oneChannelBytes.add(buffer[i]);
     }
@@ -130,7 +135,7 @@ class GeneratorEscPos extends Generator {
   List<int> _packBitsIntoBytes(List<int> bytes) {
     const pxPerLine = 8;
     final res = <int>[];
-    const threshold = 127; // set the greyscale -> b/w threshold here
+    const threshold = 125; // set the greyscale -> b/w threshold here
     for (var i = 0; i < bytes.length; i += pxPerLine) {
       var newVal = 0;
       for (int j = 0; j < pxPerLine; j++) {
@@ -535,8 +540,8 @@ class GeneratorEscPos extends Generator {
     //const bool highDensityVertical = true;
 
     invert(image);
-    flip(image, Flip.horizontal);
-    final Image imageRotated = copyRotate(image, 270);
+    flip(image, direction: FlipDirection.horizontal);
+    final Image imageRotated = copyRotate(image, angle: 270);
 
     //const int lineHeight = highDensityVertical ? 3 : 1;
     const int lineHeight = 3;
