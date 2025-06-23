@@ -475,23 +475,29 @@ class PrinterCommandImage extends PrinterCommand {
 
   static Image decodeImage(int width, int height, List<int> bytes,
       {String? mimeType}) {
+    var bytesUint8 = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+
     switch (mimeType?.trim().toLowerCase()) {
       case 'image/png':
       case 'png':
         {
-          return PngDecoder().decodeImage(bytes) ??
+          return PngDecoder().decode(bytesUint8) ??
               (throw ArgumentError("Can't decode PNG image!"));
         }
       case 'image/jpeg':
       case 'jpeg':
       case 'jpg':
         {
-          return JpegDecoder().decodeImage(bytes) ??
+          return JpegDecoder().decode(bytesUint8) ??
               (throw ArgumentError("Can't decode JPEG image!"));
         }
       default:
         {
-          return Image.fromBytes(width, height, bytes);
+          return Image.fromBytes(
+              width: width,
+              height: height,
+              bytes: bytesUint8.buffer,
+              bytesOffset: bytesUint8.offsetInBytes);
         }
     }
   }
@@ -503,8 +509,9 @@ class PrinterCommandImage extends PrinterCommand {
   void print(GenericPrinter printer) => printer.image(image, align: align);
 
   Uint8List toPNG() {
-    var bytes = encodePng(image);
-    return bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+    var bytes =
+        encodePng(image, singleFrame: true, filter: PngFilter.paeth, level: 4);
+    return bytes;
   }
 
   String toPNGBase64() => base64.encode(toPNG());

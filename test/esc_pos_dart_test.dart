@@ -28,7 +28,7 @@ void main() {
                   'height': 1,
                   'align': 'center',
                   'image':
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWP5z8DwHwAFFAIDECIziQAAAABJRU5ErkJggg==',
+                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4XmP5z8DwHwAFFAIDXs329AAAAABJRU5ErkJggg==',
                   'mimeType': 'image/png',
                 },
                 {
@@ -1704,8 +1704,8 @@ PrinterDocument _buildPrinterDocument0() {
 }
 
 PrinterDocument _buildPrinterDocument1() {
-  var image = Image(1, 1);
-  image.setPixel(0, 0, 0xFF0000FF);
+  var image = Image(width: 1, height: 1, numChannels: 4);
+  image.setPixel(0, 0, ColorRgba8(255, 0, 0, 255));
 
   var doc = PrinterDocument();
 
@@ -1726,8 +1726,8 @@ PrinterDocument _buildPrinterDocument1() {
 }
 
 PrinterDocument _buildPrinterDocument2() {
-  var image = Image(1, 1);
-  image.setPixel(0, 0, 0xFF0000FF);
+  var image = Image(width: 1, height: 1);
+  image.setPixel(0, 0, ColorRgba8(255, 0, 0, 255));
 
   var doc = PrinterDocument();
 
@@ -1764,11 +1764,11 @@ PrinterDocument _buildPrinterDocument2() {
 }
 
 PrinterDocument _buildPrinterDocument3() {
-  var image = Image(100, 23 + 12);
+  var image = Image(width: 100, height: 23 + 12);
 
   for (var x = 0; x < image.width; ++x) {
     for (var y = 0; y < image.height; ++y) {
-      image.setPixelRgba(x, y, 64, 64, 64);
+      image.setPixelRgba(x, y, 64, 64, 64, 255);
     }
   }
 

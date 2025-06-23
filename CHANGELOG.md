@@ -1,3 +1,13 @@
+## 1.2.0
+
+- Migrate to `image: ^4.5.4`.
+
+- image: ^4.5.4
+
+- test: ^1.26.2
+- dependency_validator: ^5.0.2
+- coverage: ^1.14.1
+
 ## 1.1.3
 
 - `DecoderEscPos`:
