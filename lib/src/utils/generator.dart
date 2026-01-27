@@ -130,7 +130,9 @@ abstract class Generator {
     if (isKanji) {
       return Uint8List.fromList(gbk_bytes.encode(text));
     } else {
-      return encodeChars(text);
+      var charset = selectedCharset;
+      var encoder = selectedCharsetEncoder;
+      return encodeChars(text, encoder: encoder, charset: charset);
     }
   }
 
@@ -183,6 +185,21 @@ abstract class Generator {
 
   /// Clear the buffer and reset text styles.
   List<int> reset();
+
+  /// Selects the character code table. Default table: 0 PC437 (USA, standard)
+  List<int> selectCharCodeTable({int codeTable = 0});
+
+  /// Currently selected character code table (`n` value of `ESC t n`),
+  /// or `null` if no table has been selected yet.
+  int? get selectedCharCodeTable;
+
+  /// Charset name associated with the currently selected character code table,
+  /// or `null` if the table has no explicit charset mapping.
+  String? get selectedCharset;
+
+  /// Charset encoder corresponding to [selectedCharset],
+  /// or `null` if no charset is associated or no encoder is available.
+  CharsetEncoder? get selectedCharsetEncoder;
 
   /// Ends printer job.
   List<int> endJob();

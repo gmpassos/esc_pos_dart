@@ -1,3 +1,38 @@
+## 1.2.1
+
+- `PrinterDocument`:
+  - `print`: added optional parameter `selectCharCodeTable` to select character code table before printing.
+
+- `GenericPrinter`:
+  - Added method `selectCharCodeTable({int codeTable = 0})` to send ESC/POS command to select character code table.
+
+- `Generator` (abstract):
+  - Added methods and properties for character code table support:
+    - `selectCharCodeTable({int codeTable = 0})`
+    - `int? get selectedCharCodeTable`
+    - `String? get selectedCharset`
+    - `CharsetEncoder? get selectedCharsetEncoder`
+
+- `GeneratorEscPos`:
+  - Implemented character code table selection and tracking:
+    - `_selectedCharCodeTable`, `_selectedCharset`, `_selectedCharsetEncoder` fields.
+    - `selectCharCodeTable` updates selected table and charset encoder.
+    - `reset` clears selected character code table.
+  - Added enum `CharCodeTableEscPos` mapping ESC/POS code tables to charset names and encoders.
+  - Updated text encoding to use selected charset encoder if available.
+
+- `char_encoder.dart`:
+  - Added comprehensive charset encoder resolution via `getCharsetEncoder(String? name)` using `charset` package.
+  - Updated `encodeChars` to accept optional `CharsetEncoder` or charset name and fallback to latin1 or utf8 if encoding fails.
+
+- Dependency updates:
+  - Added `charset: ^2.0.1`
+  - Updated `image` to ^4.7.2
+  - Updated `collection` to ^1.19.1
+  - Updated `test` to ^1.29.0
+  - Updated `dependency_validator` to ^5.0.3
+  - Updated `coverage` to ^1.15.0
+
 ## 1.2.0
 
 - Migrate to `image: ^4.5.4`.
