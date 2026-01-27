@@ -8,6 +8,7 @@
 
 import 'dart:typed_data' show Uint8List;
 
+import 'package:collection/collection.dart';
 import 'package:hex/hex.dart';
 import 'package:image/image.dart';
 
@@ -162,12 +163,48 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> reset() {
+    _clearSelectedCharCodeTable();
+
     globalStyles = const PosStyles();
     var bytes = cInit.codeUnits;
     bytes += setGlobalCodeTable(codeTable);
     bytes += setFont(globalFont);
     bytes += setStyles(initialStyle);
     globalStyles = initialStyle;
+    return bytes;
+  }
+
+  int? _selectedCharCodeTable;
+
+  @override
+  int? get selectedCharCodeTable => _selectedCharCodeTable;
+
+  String? _selectedCharset;
+
+  @override
+  String? get selectedCharset => _selectedCharset;
+
+  CharsetEncoder? _selectedCharsetEncoder;
+
+  @override
+  CharsetEncoder? get selectedCharsetEncoder => _selectedCharsetEncoder;
+
+  void _clearSelectedCharCodeTable() {
+    _selectedCharCodeTable = null;
+    _selectedCharset = null;
+    _selectedCharsetEncoder = null;
+  }
+
+  @override
+  List<int> selectCharCodeTable({int codeTable = 0}) {
+    _selectedCharCodeTable = codeTable;
+
+    var charCodeTableEscPos = CharCodeTableEscPos.fromCode(codeTable);
+    _selectedCharset = charCodeTableEscPos?.charset;
+    _selectedCharsetEncoder = charCodeTableEscPos?.encoder;
+
+    var bytes = cCodeTable.codeUnits;
+    bytes += [codeTable & 0xFF];
     return bytes;
   }
 
@@ -808,4 +845,96 @@ class GeneratorEscPos extends Generator {
     return bytes;
   }
 // ************************ (end) Internal command generators ************************
+}
+
+/// ESC/POS character code tables.
+///
+/// Used with the ESC/POS command:
+///   ESC t n
+///
+/// Notes:
+/// - Support varies by printer model and firmware.
+/// - After `ESC @`, the printer reverts to its factory default table
+///   (commonly PC437 or PC850).
+/// - Text must be encoded according to the selected table before printing.
+enum CharCodeTableEscPos {
+  /// PC437 — USA (default on many printers)
+  pc437(0, 'cp437'),
+
+  /// PC850 — Multilingual (Western Europe, OEM)
+  pc850(2, 'cp850'),
+
+  /// PC860 — Portuguese
+  pc860(3, 'cp860'),
+
+  /// PC863 — Canadian French
+  pc863(4, 'cp863'),
+
+  /// PC865 — Nordic
+  pc865(5, 'cp865'),
+
+  /// Windows-1252 — Western Europe (Latin-1 superset)
+  wpc1252(16, 'windows1252'),
+
+  /// LATIN-1: Alias to Windows-1252 — Western Europe (Latin-1 superset)
+  latin1(16, 'windows1252'),
+
+  /// PC866 — Cyrillic
+  pc866(17, 'cp866'),
+
+  /// PC852 — Central Europe
+  pc852(18, 'cp852'),
+
+  /// PC858 — Multilingual with Euro sign
+  pc858(19, 'cp858'),
+
+  /// PC864 — Arabic
+  pc864(20, 'cp864'),
+
+  /// PC737 — Greek
+  pc737(21, 'cp737'),
+
+  /// PC857 — Turkish
+  pc857(22, 'cp857'),
+
+  /// PC862 — Hebrew
+  pc862(23, 'cp862'),
+
+  /// PC874 — Thai
+  pc874(24, 'windows874'),
+
+  /// Windows-1250 — Central Europe
+  wpc1250(25, 'windows1250'),
+
+  /// Windows-1251 — Cyrillic
+  wpc1251(26, 'windows1251'),
+
+  /// Windows-1253 — Greek
+  wpc1253(27, 'windows1253'),
+
+  /// Windows-1254 — Turkish
+  wpc1254(28, 'windows1254'),
+
+  /// Windows-1255 — Hebrew
+  wpc1255(29, 'windows1255'),
+
+  /// Windows-1256 — Arabic
+  wpc1256(30, 'windows1256'),
+
+  /// Windows-1257 — Baltic
+  wpc1257(31, 'windows1257'),
+
+  /// Windows-1258 — Vietnamese
+  wpc1258(32, 'windows1258');
+
+  /// Numeric value used by the `ESC t n` command.
+  final int code;
+  final String? charset;
+
+  const CharCodeTableEscPos(this.code, [this.charset]);
+
+  static CharCodeTableEscPos? fromCode(int code) =>
+      CharCodeTableEscPos.values.firstWhereOrNull((e) => e.code == code);
+
+  CharsetEncoder? get encoder => getCharsetEncoder(charset);
 }

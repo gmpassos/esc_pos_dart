@@ -46,6 +46,10 @@ abstract class GenericPrinter {
     writeBytes(_generator.reset());
   }
 
+  void selectCharCodeTable({int codeTable = 0}) {
+    writeBytes(_generator.selectCharCodeTable(codeTable: codeTable));
+  }
+
   void endJob() {
     writeBytes(_generator.endJob());
   }

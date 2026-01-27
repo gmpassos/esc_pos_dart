@@ -58,11 +58,16 @@ class PrinterDocument {
   /// - [endJob]: If `true` (default), calls [printer.endJob()] after printing.
   ///
   /// Skips execution if there are no commands.
-  void print(GenericPrinter printer, {bool reset = true, bool endJob = true}) {
+  void print(GenericPrinter printer,
+      {bool reset = true, int? selectCharCodeTable, bool endJob = true}) {
     if (commands.isEmpty) return;
 
     if (reset) {
       printer.reset();
+    }
+
+    if (selectCharCodeTable != null) {
+      printer.selectCharCodeTable(codeTable: selectCharCodeTable);
     }
 
     for (var c in commands) {
