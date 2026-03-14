@@ -1,8 +1,9 @@
-## 1.2.2
+## 1.3.0
 
 - `PrinterDocument`:
   - Added `fontSize` field with clamped range 1 to 8.
   - Updated constructor to accept optional `fontSize` parameter.
+    - **Breaking change:** The constructor now uses named parameters.
   - Updated `fromJson` and `toJson` to handle `fontSize`.
 
 - `Generator`:
