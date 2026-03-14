@@ -14,6 +14,7 @@ void main() {
           json1,
           equals(
             {
+              'fontSize': 2,
               'commands': [
                 {'type': 'text', 'text': 'Hello'},
                 {
@@ -41,6 +42,9 @@ void main() {
           ));
 
       var doc2 = PrinterDocument.fromJson(json1);
+
+      expect(doc2.fontSize, equals(2));
+      expect(doc2.commands.length, equals(6));
 
       var json2 = doc2.toJson();
       expect(json2, equals(json1));
@@ -1707,7 +1711,7 @@ PrinterDocument _buildPrinterDocument1() {
   var image = Image(width: 1, height: 1, numChannels: 4);
   image.setPixel(0, 0, ColorRgba8(255, 0, 0, 255));
 
-  var doc = PrinterDocument();
+  var doc = PrinterDocument(fontSize: 2);
 
   doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 

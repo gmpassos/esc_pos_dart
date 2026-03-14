@@ -178,6 +178,13 @@ abstract class Generator {
   int getCharsPerLine(PosStyles styles, int? maxCharsPerLine) {
     var fontType = styles.fontType ?? globalFont;
     var charsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(fontType);
+    var fontWidth = styles.width;
+
+    var fontWidthScale = fontWidth.value;
+    if (fontWidthScale > 1) {
+      charsPerLine = charsPerLine ~/ fontWidthScale;
+    }
+
     return charsPerLine;
   }
 
