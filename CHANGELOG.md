@@ -1,3 +1,18 @@
+## 1.2.2
+
+- `PrinterDocument`:
+  - Added `fontSize` field with clamped range 1 to 8.
+  - Updated constructor to accept optional `fontSize` parameter.
+  - Updated `fromJson` and `toJson` to handle `fontSize`.
+
+- `Generator`:
+  - Updated `getCharsPerLine` to adjust character count based on `PosStyles.width` scaling.
+
+- Dependencies:
+  - Updated `image` to ^4.8.0.
+  - Updated `test` to ^1.30.0.
+  - Updated `dependency_validator` to ^5.0.4.
+
 ## 1.2.1
 
 - `PrinterDocument`:

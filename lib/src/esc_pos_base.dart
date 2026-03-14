@@ -13,12 +13,19 @@ import 'utils/pos_styles.dart';
 /// An ESC/POS printer document.
 /// See [NetworkPrinter].
 class PrinterDocument {
+  final int fontSize;
+
   final List<PrinterCommand> commands;
 
-  PrinterDocument([List<PrinterCommand>? commands]) : commands = commands ?? [];
+  PrinterDocument({List<PrinterCommand>? commands, int fontSize = 1})
+      : commands = commands ?? [],
+        fontSize = fontSize.clamp(1, 8).toInt();
 
   factory PrinterDocument.fromJson(Map<String, dynamic> j) => PrinterDocument(
-        (j['commands'] as List).map((e) => PrinterCommand.fromJson(e)).toList(),
+        commands: (j['commands'] as List)
+            .map((e) => PrinterCommand.fromJson(e))
+            .toList(),
+        fontSize: j['fontSize'] ?? 1,
       );
 
   PrinterCommand addCommand(PrinterCommand command) {
@@ -80,6 +87,7 @@ class PrinterDocument {
   }
 
   Map<String, dynamic> toJson() => {
+        'fontSize': fontSize,
         'commands': commands.map((e) => e.toJson()).toList(),
       };
 
