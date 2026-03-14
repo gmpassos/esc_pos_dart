@@ -6,6 +6,8 @@
  * See LICENSE for distribution and usage details.
  */
 
+import 'package:collection/collection.dart';
+
 enum PosAlign {
   left(0),
   center(1),
@@ -91,6 +93,9 @@ enum PosTextSize {
 
   static int decSize(PosTextSize height, PosTextSize width) =>
       16 * (width.value - 1) + (height.value - 1);
+
+  static PosTextSize? withValue(int value) =>
+      PosTextSize.values.firstWhereOrNull((e) => e.value == value);
 }
 
 enum PaperSize {

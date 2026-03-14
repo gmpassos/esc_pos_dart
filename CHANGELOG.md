@@ -1,3 +1,13 @@
+## 1.3.1
+
+- `PrinterDocument`:
+  - Updated `print` method to apply text size styles using `PosTextSize.withValue` and `printer.setStyles` when `fontSize` is set.
+
+- `enums.dart`:
+  - Added import of `package:collection/collection.dart`.
+  - `PosTextSize`:
+    - Added static method `withValue(int value)` to return a `PosTextSize` enum matching the given value or null if none matches.
+
 ## 1.3.0
 
 - `PrinterDocument`:

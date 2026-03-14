@@ -77,6 +77,13 @@ class PrinterDocument {
       printer.selectCharCodeTable(codeTable: selectCharCodeTable);
     }
 
+    var textSize = PosTextSize.withValue(fontSize);
+    if (textSize != null) {
+      printer.setStyles(
+        PosStyles(width: textSize, height: textSize),
+      );
+    }
+
     for (var c in commands) {
       c.print(printer);
     }
