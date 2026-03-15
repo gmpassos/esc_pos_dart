@@ -1,4 +1,4 @@
-## 1.3.2
+## 1.3.1
 
 - `PrinterDocument`:
   - `print`: added optional `selectCharCodeTable` parameter.
@@ -42,13 +42,6 @@
   - Added `copyWithDefaults` method to fill null fields from defaults or parameters.
   - Updated constructors to allow nullable height and width.
 
-## 1.3.1
-
-- `PrinterDocument`:
-  - Updated `print` method to apply text size styles using `PosTextSize.withValue` and `printer.setStyles` when `fontSize` is set.
-
-- `enums.dart`:
-  - Added import of `package:collection/collection.dart`.
   - `PosTextSize`:
     - Added static method `withValue(int value)` to return a `PosTextSize` enum matching the given value or null if none matches.
 
