@@ -170,7 +170,8 @@ abstract class Generator {
   /// charWidth = default width * text size multiplier
   double getCharWidth(PosStyles styles, {int? maxCharsPerLine}) {
     var charsPerLine = getCharsPerLine(styles, maxCharsPerLine);
-    var charWidth = (paperSize.width / charsPerLine) * styles.width.value;
+    var width = styles.width ?? globalStyles.width ?? PosTextSize.size1;
+    var charWidth = (paperSize.width / charsPerLine) * width.value;
     return charWidth;
   }
 
@@ -178,7 +179,8 @@ abstract class Generator {
   int getCharsPerLine(PosStyles styles, int? maxCharsPerLine) {
     var fontType = styles.fontType ?? globalFont;
     var charsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(fontType);
-    var fontWidth = styles.width;
+
+    var fontWidth = styles.width ?? globalStyles.width ?? PosTextSize.size1;
 
     var fontWidthScale = fontWidth.value;
     if (fontWidthScale > 1) {
@@ -191,7 +193,9 @@ abstract class Generator {
   //**************************** Public command generators ************************
 
   /// Clear the buffer and reset text styles.
-  List<int> reset();
+  ///
+  /// - [styles] is the initial/reset styles to use for printing.
+  List<int> reset({PosStyles? styles});
 
   /// Selects the character code table. Default table: 0 PC437 (USA, standard)
   List<int> selectCharCodeTable({int codeTable = 0});
@@ -215,11 +219,15 @@ abstract class Generator {
   /// (even after resetting)
   List<int> setGlobalCodeTable(String? codeTable);
 
-  /// Set global font which will be used instead of the default printer's font
-  /// (even after resetting)
+  /// Set global font which will be used.
+  /// See [initialStyle] and [setStyles].
   List<int> setFont(PosFontType font, {int? maxCharsPerLine});
 
   int getMaxCharsPerLine(PosFontType font);
+
+  /// Set global align which will be used.
+  /// See [initialStyle] and [setStyles].
+  List<int> setAlign(PosAlign align, {bool force = false});
 
   /// Temporarily applies [styles], executes [block], and then restores the previous styles.
   ///

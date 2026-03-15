@@ -16,7 +16,11 @@ void main() {
             {
               'fontSize': 2,
               'commands': [
-                {'type': 'text', 'text': 'Hello'},
+                {
+                  'type': 'text',
+                  'text': 'Hello',
+                  'style': {'align': 'left'}
+                },
                 {
                   'type': 'text',
                   'text': 'World!',
@@ -286,6 +290,10 @@ void main() {
           'parameters': ['left']
         },
         {
+          'name': 'font-size',
+          'parameters': [2, 2]
+        },
+        {
           'name': 'text',
           'parameters': ['Hello\n']
         },
@@ -380,6 +388,9 @@ void main() {
             27,
             97,
             0,
+            29,
+            33,
+            17,
             72,
             101,
             108,

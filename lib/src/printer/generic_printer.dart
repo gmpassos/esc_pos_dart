@@ -42,8 +42,8 @@ abstract class GenericPrinter {
   void writeBytes(List<int> bytes);
 
   // ************************ Printer Commands ************************
-  void reset() {
-    writeBytes(_generator.reset());
+  void reset({PosStyles? styles}) {
+    writeBytes(_generator.reset(styles: styles));
   }
 
   void selectCharCodeTable({int codeTable = 0}) {

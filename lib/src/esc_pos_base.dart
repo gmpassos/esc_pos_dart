@@ -69,19 +69,20 @@ class PrinterDocument {
       {bool reset = true, int? selectCharCodeTable, bool endJob = true}) {
     if (commands.isEmpty) return;
 
+    final textSize = PosTextSize.withValue(fontSize);
+
     if (reset) {
-      printer.reset();
+      var stylesInitial = PosStyles(width: textSize, height: textSize);
+      printer.reset(styles: stylesInitial);
     }
 
     if (selectCharCodeTable != null) {
       printer.selectCharCodeTable(codeTable: selectCharCodeTable);
     }
 
-    var textSize = PosTextSize.withValue(fontSize);
+    // Ensure `fontSize`:
     if (textSize != null) {
-      printer.setStyles(
-        PosStyles(width: textSize, height: textSize),
-      );
+      printer.setStyles(PosStyles(width: textSize, height: textSize));
     }
 
     for (var c in commands) {
@@ -158,88 +159,77 @@ PrinterCommandType? parsePrinterCommandType(Object? o) {
 }
 
 class PrinterCommandStyle {
-  final bool bold;
-  final bool reverse;
-  final bool underline;
-  final bool turn90;
-  final PosAlign align;
-  final int width;
-  final int height;
-  final PosFontType fontType;
-  final String codeTable;
+  final bool? bold;
+  final bool? reverse;
+  final bool? underline;
+  final bool? turn90;
+  final PosAlign? align;
+  final int? width;
+  final int? height;
+  final PosFontType? fontType;
+  final String? codeTable;
 
-  PrinterCommandStyle(
-      {this.bold = false,
-      this.reverse = false,
-      this.underline = false,
-      this.turn90 = false,
-      this.align = PosAlign.left,
-      this.width = 1,
-      this.height = 1,
-      this.fontType = PosFontType.fontA,
-      this.codeTable = 'CP437'});
+  const PrinterCommandStyle(
+      {this.bold,
+      this.reverse,
+      this.underline,
+      this.turn90,
+      this.align,
+      this.width,
+      this.height,
+      this.fontType,
+      this.codeTable});
+
+  const PrinterCommandStyle.defaults({
+    this.bold = false,
+    this.reverse = false,
+    this.underline = false,
+    this.turn90 = false,
+    this.align = PosAlign.left,
+    this.width = 1,
+    this.height = 1,
+    this.fontType = PosFontType.fontA,
+    this.codeTable = 'CP437',
+  });
 
   factory PrinterCommandStyle.fromJson(Map<String, dynamic> j) =>
       PrinterCommandStyle(
-        bold: j['bold'] as bool? ?? false,
-        reverse: j['reverse'] as bool? ?? false,
-        underline: j['underline'] as bool? ?? false,
-        turn90: j['turn90'] as bool? ?? false,
-        align: PosAlign.from(j['align']) ?? PosAlign.left,
-        width: j['width'] as int? ?? 1,
-        height: j['height'] as int? ?? 1,
-        fontType: PosFontType.from(j['fontType']) ?? PosFontType.fontA,
-        codeTable: j['codeTable'] as String? ?? 'CP437',
+        bold: j['bold'] as bool?,
+        reverse: j['reverse'] as bool?,
+        underline: j['underline'] as bool?,
+        turn90: j['turn90'] as bool?,
+        align: PosAlign.from(j['align']),
+        width: j['width'] as int?,
+        height: j['height'] as int?,
+        fontType: PosFontType.from(j['fontType']),
+        codeTable: j['codeTable'] as String?,
       );
 
   bool get isDefault => toJson().isEmpty;
 
   Map<String, dynamic> toJson() => {
-        if (bold) 'bold': bold,
-        if (reverse) 'reverse': reverse,
-        if (underline) 'underline': underline,
-        if (turn90) 'turn90': turn90,
-        if (align != PosAlign.left) 'align': align.name,
-        if (width != 1) 'width': width,
-        if (height != 1) 'height': height,
-        if (fontType != PosFontType.fontA) 'fontType': fontType.valueName,
-        if (codeTable != 'CP437') 'codeTable': codeTable,
+        if (bold != null) 'bold': bold,
+        if (reverse != null) 'reverse': reverse,
+        if (underline != null) 'underline': underline,
+        if (turn90 != null) 'turn90': turn90,
+        if (align != null) 'align': align!.name,
+        if (width != null) 'width': width,
+        if (height != null) 'height': height,
+        if (fontType != null) 'fontType': fontType!.valueName,
+        if (codeTable != null) 'codeTable': codeTable,
       };
 
   PosStyles toPosStyles() => PosStyles(
-        bold: bold,
-        reverse: reverse,
-        underline: underline,
-        turn90: turn90,
+        bold: bold ?? false,
+        reverse: reverse ?? false,
+        underline: underline ?? false,
+        turn90: turn90 ?? false,
         align: align,
-        width: getPosTextSize(width),
-        height: getPosTextSize(height),
+        width: width != null ? PosTextSize.withValue(width!) : null,
+        height: height != null ? PosTextSize.withValue(height!) : null,
         fontType: fontType,
         codeTable: codeTable,
       );
-
-  static PosTextSize getPosTextSize(int size) {
-    switch (size) {
-      case 1:
-        return PosTextSize.size1;
-      case 2:
-        return PosTextSize.size2;
-      case 3:
-        return PosTextSize.size3;
-      case 4:
-        return PosTextSize.size4;
-      case 5:
-        return PosTextSize.size5;
-      case 6:
-        return PosTextSize.size6;
-      case 7:
-        return PosTextSize.size7;
-      case 8:
-        return PosTextSize.size8;
-      default:
-        throw UnsupportedError("Unsupported size: $size");
-    }
-  }
 }
 
 abstract class PrinterCommand {
