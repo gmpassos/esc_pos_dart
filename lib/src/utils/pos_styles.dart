@@ -16,8 +16,8 @@ class PosStyles {
     this.underline = false,
     this.turn90 = false,
     this.align,
-    this.height = PosTextSize.size1,
-    this.width = PosTextSize.size1,
+    this.height,
+    this.width,
     this.fontType,
     this.codeTable,
     this.isKanji = false,
@@ -42,8 +42,8 @@ class PosStyles {
   final bool underline;
   final bool turn90;
   final PosAlign? align;
-  final PosTextSize height;
-  final PosTextSize width;
+  final PosTextSize? height;
+  final PosTextSize? width;
   final PosFontType? fontType;
   final String? codeTable;
   final bool isKanji;
@@ -71,6 +71,27 @@ class PosStyles {
       fontType: fontType ?? this.fontType,
       codeTable: codeTable ?? this.codeTable,
       isKanji: isKanji ?? this.isKanji,
+    );
+  }
+
+  PosStyles copyWithDefaults(
+      {PosAlign? align,
+      PosTextSize? height,
+      PosTextSize? width,
+      PosFontType? fontType,
+      String? codeTable,
+      PosStyles? stylesDefaults}) {
+    return PosStyles(
+      bold: bold,
+      reverse: reverse,
+      underline: underline,
+      turn90: turn90,
+      align: this.align ?? align ?? stylesDefaults?.align,
+      height: this.height ?? height ?? stylesDefaults?.height,
+      width: this.width ?? width ?? stylesDefaults?.width,
+      fontType: this.fontType ?? fontType ?? stylesDefaults?.fontType,
+      codeTable: this.codeTable ?? codeTable ?? stylesDefaults?.codeTable,
+      isKanji: isKanji,
     );
   }
 

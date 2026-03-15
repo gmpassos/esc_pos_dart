@@ -162,15 +162,39 @@ class GeneratorEscPos extends Generator {
   //**************************** Public command generators ************************
 
   @override
-  List<int> reset() {
+  List<int> reset({PosStyles? styles}) {
     _clearSelectedCharCodeTable();
 
-    globalStyles = const PosStyles();
+    var stylesInitial = initialStyle
+        .copyWithDefaults(
+          codeTable: codeTable,
+          fontType: globalFont,
+        )
+        .copyWithDefaults(
+          stylesDefaults: const PosStyles.defaults(),
+        );
+
+    // If `styles` is passed, use it as initial styles:
+    if (styles != null) {
+      stylesInitial = styles.copyWithDefaults(stylesDefaults: stylesInitial);
+    }
+
+    // Reset printer and set `globalStyles` as reset (defaults)
     var bytes = cInit.codeUnits;
-    bytes += setGlobalCodeTable(codeTable);
-    bytes += setFont(globalFont);
-    bytes += setStyles(initialStyle);
-    globalStyles = initialStyle;
+    globalStyles = const PosStyles.defaults();
+
+    // Ensure code table set:
+    bytes +=
+        setGlobalCodeTable(stylesInitial.codeTable ?? codeTable, force: true);
+    // Ensure font set:
+    bytes += setFont(stylesInitial.fontType ?? globalFont, force: true);
+
+    // Ensure font set:
+    bytes += setAlign(stylesInitial.align ?? PosAlign.left, force: true);
+
+    // Set the initial styles:
+    bytes += setStyles(stylesInitial);
+
     return bytes;
   }
 
@@ -215,9 +239,9 @@ class GeneratorEscPos extends Generator {
   }
 
   @override
-  List<int> setGlobalCodeTable(String? codeTable) {
+  List<int> setGlobalCodeTable(String? codeTable, {bool force = false}) {
     List<int> bytes;
-    if (codeTable != null && globalStyles.codeTable != codeTable) {
+    if (codeTable != null && (force || globalStyles.codeTable != codeTable)) {
       globalStyles = globalStyles.copyWith(codeTable: codeTable);
       bytes = <int>[
         ...cCodeTable.codeUnits,
@@ -230,9 +254,10 @@ class GeneratorEscPos extends Generator {
   }
 
   @override
-  List<int> setFont(PosFontType font, {int? maxCharsPerLine}) {
+  List<int> setFont(PosFontType font,
+      {int? maxCharsPerLine, bool force = false}) {
     List<int> bytes;
-    if (globalStyles.fontType != font) {
+    if (force || globalStyles.fontType != font) {
       globalStyles = globalStyles.copyWith(fontType: font);
       globalMaxCharsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(font);
       bytes = font == PosFontType.fontB ? cFontB.codeUnits : cFontA.codeUnits;
@@ -255,6 +280,20 @@ class GeneratorEscPos extends Generator {
             ? (48 - 6)
             : (64 - 8);
     }
+  }
+
+  @override
+  List<int> setAlign(PosAlign align, {bool force = false}) {
+    var bytes = <int>[];
+
+    if (force || align != globalStyles.align) {
+      bytes += encodeChars(align == PosAlign.left
+          ? cAlignLeft
+          : (align == PosAlign.center ? cAlignCenter : cAlignRight));
+      globalStyles = globalStyles.copyWith(align: align);
+    }
+
+    return bytes;
   }
 
   @override
@@ -311,13 +350,17 @@ class GeneratorEscPos extends Generator {
     }
 
     // Characters size
-    final height = styles.height;
-    final width = styles.width;
-    if (height.value != globalStyles.height.value ||
-        width.value != globalStyles.width.value) {
+    var height = styles.height;
+    var width = styles.width;
+
+    if ((height != null && height.value != globalStyles.height?.value) ||
+        (width != null && width.value != globalStyles.width?.value)) {
+      height ??= globalStyles.height ?? PosTextSize.size1;
+      width ??= globalStyles.width ?? PosTextSize.size1;
+
       bytes += [
         ...cSizeGSn.codeUnits,
-        PosTextSize.decSize(height, width),
+        PosTextSize.encodeSize(height, width),
       ];
       globalStyles = globalStyles.copyWith(height: height, width: width);
     }

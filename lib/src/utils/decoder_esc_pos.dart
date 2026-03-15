@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 
 import 'decoder.dart';
+import 'enums.dart';
 
 /// Decodes ESC/POS commands from received print data,
 /// extracting text, formatting, and control instructions.
@@ -22,6 +23,7 @@ class DecoderEscPos extends Decoder {
 
   static const _gs = 0x1D;
   static const _gsCut = 0x56;
+  static const _gsFontSize = 0x21;
 
   static const _endJob = 0x0C;
 
@@ -235,6 +237,18 @@ class DecoderEscPos extends Decoder {
                                     "Invalid cut parameter: $c2"))),
                   );
                 }
+              case _gsFontSize:
+                {
+                  var c2 = serial[(offset + consumed)];
+                  ++consumed;
+
+                  var sz = PosTextSize.decodeSize(c2);
+
+                  _output.add(CommandEscPosFontSize(
+                    widthSize: sz.width.value,
+                    heightSize: sz.height.value,
+                  ));
+                }
               default:
                 throw FormatException("Unknown GS char: $c1");
             }
@@ -288,6 +302,8 @@ abstract class CommandEscPos extends Command {
         return CommandEscPosTable.fromJson(json);
       case 'font':
         return CommandEscPosFont.fromJson(json);
+      case 'font-size':
+        return CommandEscPosFontSize.fromJson(json);
       case 'align':
         return CommandEscPosAlign.fromJson(json);
       case 'bold':
@@ -377,6 +393,26 @@ class CommandEscPosFont extends CommandEscPos {
     var parameters = json["parameters"] as List?;
     var p = parameters?[0] as String?;
     return CommandEscPosFont(a: p == 'a', b: p == 'b');
+  }
+}
+
+class CommandEscPosFontSize extends CommandEscPos {
+  final int widthSize;
+  final int heightSize;
+
+  CommandEscPosFontSize({int? widthSize, int? heightSize})
+      : widthSize = (widthSize ?? 1).clamp(1, 8),
+        heightSize = (heightSize ?? 1).clamp(1, 8),
+        super('font-size');
+
+  @override
+  List get parameters => [widthSize, heightSize];
+
+  factory CommandEscPosFontSize.fromJson(Map json) {
+    var parameters = json["parameters"] as List?;
+    var w = parameters?[0] as int?;
+    var h = parameters?[1] as int?;
+    return CommandEscPosFontSize(widthSize: w, heightSize: h);
   }
 }
 

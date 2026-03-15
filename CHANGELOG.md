@@ -1,3 +1,50 @@
+## 1.3.1
+
+- `PrinterDocument`:
+  - `print`: added optional `selectCharCodeTable` parameter.
+  - `print`: pass initial `PosStyles` with font size to `printer.reset()`.
+  - `print`: ensure `fontSize` style is applied via `printer.setStyles()`.
+
+- `PrinterCommandStyle`:
+  - Changed all fields to nullable.
+  - Added `const` constructor and `defaults` constructor.
+  - `fromJson`: no longer provide default values; fields nullable.
+  - `toJson`: serialize only non-null fields.
+  - `toPosStyles`: treat null booleans as false; convert nullable width/height to `PosTextSize` or null.
+  - Removed internal `getPosTextSize` method.
+
+- `GenericPrinter`:
+  - `reset` method now accepts optional `PosStyles` parameter and passes it to generator.
+
+- `DecoderEscPos`:
+  - Added support for GS command 0x21 to decode font size.
+  - Added `CommandEscPosFontSize` command with width and height size parameters.
+  - Updated `CommandEscPos.fromJson` to support `font-size` command.
+
+- `enums.dart`:
+  - Added `PosTextSize.encodeSize` to encode width and height into a single int.
+  - Added `PosTextSize.decodeSize` to decode int into width and height `PosTextSize` values.
+
+- `Generator`:
+  - `reset` now accepts optional `PosStyles` parameter.
+  - Added `setAlign` method with optional `force` parameter.
+  - Updated `setGlobalCodeTable` and `setFont` to accept `force` parameter.
+  - Updated `setStyles` to handle nullable width and height, and encode font size using `PosTextSize.encodeSize`.
+  - Updated `getCharWidth` and `getCharsPerLine` to handle nullable width and global styles fallback.
+
+- `GeneratorEscPos`:
+  - Implemented `reset` with optional `styles` parameter, applying initial styles with defaults.
+  - Implemented `setAlign` to update alignment if changed or forced.
+  - Updated `setStyles` to handle nullable height and width, and encode font size accordingly.
+
+- `PosStyles`:
+  - Made `height` and `width` nullable.
+  - Added `copyWithDefaults` method to fill null fields from defaults or parameters.
+  - Updated constructors to allow nullable height and width.
+
+  - `PosTextSize`:
+    - Added static method `withValue(int value)` to return a `PosTextSize` enum matching the given value or null if none matches.
+
 ## 1.3.0
 
 - `PrinterDocument`:
