@@ -169,22 +169,26 @@ abstract class Generator {
 
   /// charWidth = default width * text size multiplier
   double getCharWidth(PosStyles styles, {int? maxCharsPerLine}) {
-    var charsPerLine = getCharsPerLine(styles, maxCharsPerLine);
+    var charsPerLine =
+        getCharsPerLine(styles, maxCharsPerLine: maxCharsPerLine);
     var width = styles.width ?? globalStyles.width ?? PosTextSize.size1;
     var charWidth = (paperSize.width / charsPerLine) * width.value;
     return charWidth;
   }
 
   /// Calculates the average character width based on [styles] and [maxCharsPerLine].
-  int getCharsPerLine(PosStyles styles, int? maxCharsPerLine) {
+  int getCharsPerLine(PosStyles styles,
+      {int? maxCharsPerLine, bool applyWidth = false}) {
     var fontType = styles.fontType ?? globalFont;
     var charsPerLine = maxCharsPerLine ?? getMaxCharsPerLine(fontType);
 
-    var fontWidth = styles.width ?? globalStyles.width ?? PosTextSize.size1;
+    if (applyWidth) {
+      var fontWidth = styles.width ?? globalStyles.width ?? PosTextSize.size1;
 
-    var fontWidthScale = fontWidth.value;
-    if (fontWidthScale > 1) {
-      charsPerLine = charsPerLine ~/ fontWidthScale;
+      var fontWidthScale = fontWidth.value;
+      if (fontWidthScale > 1) {
+        charsPerLine = charsPerLine ~/ fontWidthScale;
+      }
     }
 
     return charsPerLine;
@@ -364,7 +368,15 @@ abstract class Generator {
       int linesAfter = 0,
       PosStyles styles = const PosStyles()}) {
     var font = styles.fontType ?? globalFont;
-    len ??= getMaxCharsPerLine(font);
+    var width = styles.width ?? globalStyles.width ?? PosTextSize.size1;
+
+    if (len == null) {
+      len = getMaxCharsPerLine(font);
+      if (width.value > 1) {
+        len = len ~/ width.value;
+      }
+    }
+
     var line = ch * len;
     return text(line, styles: styles);
   }
