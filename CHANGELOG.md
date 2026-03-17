@@ -1,3 +1,16 @@
+## 1.3.2
+
+- `PrinterDocument`:
+  - Added `fontType` field with default `'a'`.
+  - Updated constructor to accept `fontType` parameter, normalizing to lowercase and trimming.
+  - Updated `fromJson` and `toJson` to include `fontType`.
+  - Updated `print` method to apply `fontType` along with `fontSize` in styles and printer commands.
+
+- `Generator`:
+  - Updated `getCharsPerLine` to accept named parameters and apply font width scaling conditionally.
+  - Updated `getCharWidth` to pass named parameter `maxCharsPerLine`.
+  - Updated `hr` method to calculate line length considering font width scaling.
+
 ## 1.3.1
 
 - `PrinterDocument`:

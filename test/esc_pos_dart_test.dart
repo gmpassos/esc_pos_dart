@@ -14,6 +14,7 @@ void main() {
           json1,
           equals(
             {
+              'fontType': 'a',
               'fontSize': 2,
               'commands': [
                 {
@@ -319,7 +320,7 @@ void main() {
         },
         {
           'name': 'text',
-          'parameters': ['------------------------------------------\n']
+          'parameters': ['---------------------\n']
         },
         {
           'name': 'align',
@@ -350,9 +351,7 @@ void main() {
         },
         {
           'name': 'text',
-          'parameters': [
-            '--------------------------------------------------------\n'
-          ]
+          'parameters': ['----------------------------\n']
         },
         {
           'name': 'font',
@@ -437,27 +436,6 @@ void main() {
             45,
             45,
             45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
-            45,
             10,
             27,
             97,
@@ -510,6 +488,171 @@ void main() {
             45,
             45,
             45,
+            10,
+            27,
+            77,
+            0,
+            10,
+            10,
+            10,
+            10,
+            29,
+            86,
+            0,
+            12
+          ]));
+    });
+
+    test('BytesPrinter (ESC/POS 1; font: b)', () async {
+      var profile = await CapabilityProfile.load();
+
+      final printer = BytesPrinter(PaperSize.mm80, profile);
+
+      var doc = _buildPrinterDocument1b();
+
+      doc.print(printer);
+
+      var printedBytes = printer.toBytes();
+
+      expect(printedBytes.length, greaterThan(10));
+
+      print("<<${latin1.decode(printedBytes)}>>");
+      print(printedBytes);
+
+      var decodedCommands = DecoderEscPos().decode(printedBytes);
+
+      var commandsJson = decodedCommands.toJson();
+      var decodedCommands2 = CommandEscPos.fromJsonList(commandsJson);
+      expect(decodedCommands2, decodedCommands);
+
+      expect(commandsJson, [
+        {'name': 'reset'},
+        {
+          'name': 'table',
+          'parameters': [0]
+        },
+        {
+          'name': 'font',
+          'parameters': ['b']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'font-size',
+          'parameters': [2, 2]
+        },
+        {
+          'name': 'text',
+          'parameters': ['Hello\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['right']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['on']
+        },
+        {
+          'name': 'text',
+          'parameters': ['World!\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'bold',
+          'parameters': ['off']
+        },
+        {
+          'name': 'text',
+          'parameters': ['----------------------------\n']
+        },
+        {
+          'name': 'align',
+          'parameters': ['center']
+        },
+        {
+          'name': 'lines_spacing',
+          'parameters': [16]
+        },
+        {
+          'name': 'bit_image',
+          'parameters': [
+            33,
+            1,
+            0,
+            [128, 0, 0],
+            true
+          ]
+        },
+        {'name': 'lines_spacing:1/6'},
+        {
+          'name': 'align',
+          'parameters': ['left']
+        },
+        {
+          'name': 'text',
+          'parameters': [
+            '----------------------------\n'
+                '\n'
+                '\n'
+                '\n'
+                '\n'
+          ]
+        },
+        {
+          'name': 'cut',
+          'parameters': ['full']
+        },
+        {'name': 'end_job'}
+      ]);
+
+      expect(
+          printedBytes,
+          equals([
+            27,
+            64,
+            27,
+            116,
+            0,
+            27,
+            77,
+            1,
+            27,
+            97,
+            0,
+            29,
+            33,
+            17,
+            72,
+            101,
+            108,
+            108,
+            111,
+            10,
+            27,
+            97,
+            2,
+            27,
+            69,
+            1,
+            87,
+            111,
+            114,
+            108,
+            100,
+            33,
+            10,
+            27,
+            97,
+            0,
+            27,
+            69,
+            0,
             45,
             45,
             45,
@@ -540,8 +683,54 @@ void main() {
             45,
             10,
             27,
-            77,
+            97,
+            1,
+            27,
+            51,
+            16,
+            27,
+            42,
+            33,
+            1,
             0,
+            128,
+            0,
+            0,
+            10,
+            27,
+            50,
+            27,
+            97,
+            0,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            45,
+            10,
             10,
             10,
             10,
@@ -1723,6 +1912,28 @@ PrinterDocument _buildPrinterDocument1() {
   image.setPixel(0, 0, ColorRgba8(255, 0, 0, 255));
 
   var doc = PrinterDocument(fontSize: 2);
+
+  doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
+
+  doc.addText(
+      text: 'World!',
+      style: PrinterCommandStyle(align: PosAlign.right, bold: true));
+
+  doc.addHR();
+
+  doc.addImage(image);
+
+  doc.addHR(style: PrinterCommandStyle(fontType: PosFontType.fontB));
+
+  doc.addCut();
+  return doc;
+}
+
+PrinterDocument _buildPrinterDocument1b() {
+  var image = Image(width: 1, height: 1, numChannels: 4);
+  image.setPixel(0, 0, ColorRgba8(255, 0, 0, 255));
+
+  var doc = PrinterDocument(fontSize: 2, fontType: 'b');
 
   doc.addText(text: 'Hello', style: PrinterCommandStyle(align: PosAlign.left));
 

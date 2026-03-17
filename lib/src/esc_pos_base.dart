@@ -13,18 +13,23 @@ import 'utils/pos_styles.dart';
 /// An ESC/POS printer document.
 /// See [NetworkPrinter].
 class PrinterDocument {
+  final String fontType;
   final int fontSize;
 
   final List<PrinterCommand> commands;
 
-  PrinterDocument({List<PrinterCommand>? commands, int fontSize = 1})
+  PrinterDocument(
+      {List<PrinterCommand>? commands, String fontType = 'a', int fontSize = 1})
       : commands = commands ?? [],
+        fontType =
+            fontType.trim().isNotEmpty ? fontType.trim().toLowerCase() : 'a',
         fontSize = fontSize.clamp(1, 8).toInt();
 
   factory PrinterDocument.fromJson(Map<String, dynamic> j) => PrinterDocument(
         commands: (j['commands'] as List)
             .map((e) => PrinterCommand.fromJson(e))
             .toList(),
+        fontType: j['fontType'] ?? 'a',
         fontSize: j['fontSize'] ?? 1,
       );
 
@@ -69,10 +74,12 @@ class PrinterDocument {
       {bool reset = true, int? selectCharCodeTable, bool endJob = true}) {
     if (commands.isEmpty) return;
 
+    var textFont = PosFontType.from(fontType);
     final textSize = PosTextSize.withValue(fontSize);
 
     if (reset) {
-      var stylesInitial = PosStyles(width: textSize, height: textSize);
+      var stylesInitial =
+          PosStyles(fontType: textFont, width: textSize, height: textSize);
       printer.reset(styles: stylesInitial);
     }
 
@@ -80,9 +87,10 @@ class PrinterDocument {
       printer.selectCharCodeTable(codeTable: selectCharCodeTable);
     }
 
-    // Ensure `fontSize`:
-    if (textSize != null) {
-      printer.setStyles(PosStyles(width: textSize, height: textSize));
+    // Ensure `fontType` and `fontSize`:
+    if (textFont != null || textSize != null) {
+      printer.setStyles(
+          PosStyles(fontType: textFont, width: textSize, height: textSize));
     }
 
     for (var c in commands) {
@@ -95,6 +103,7 @@ class PrinterDocument {
   }
 
   Map<String, dynamic> toJson() => {
+        'fontType': fontType,
         'fontSize': fontSize,
         'commands': commands.map((e) => e.toJson()).toList(),
       };
