@@ -341,6 +341,10 @@ class DecoderEscPos extends Decoder<CommandEscPos> {
     var offset = _bufOffset + start;
 
     if (!lenient) {
+      // Discard the truncated data, so the decoder can be reused:
+      _bufPos = _buf.length;
+      _textBuffer = null;
+      _compact();
       throw FormatException(
           'Truncated ESC/POS command at offset $offset: $bytes');
     }
@@ -353,6 +357,11 @@ class DecoderEscPos extends Decoder<CommandEscPos> {
 
   void _onInvalid(_Reader r, int start, String message) {
     if (!lenient) {
+      // Skip the invalid command (prefix and code), so the decoder can be
+      // reused (the remaining data is decoded by the next call):
+      _bufPos = start + 2 <= r.end ? start + 2 : r.end;
+      _textBuffer = null;
+      _compact();
       throw FormatException(message);
     }
 

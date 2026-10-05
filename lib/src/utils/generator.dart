@@ -90,7 +90,11 @@ abstract class Generator {
 
   int? globalMaxCharsPerLine;
 
-  PosStyles globalStyles = PosStyles();
+  /// The styles currently in effect on the printer.
+  /// - Starts with the printer defaults (power-on/`ESC @` state), so that
+  ///   restoring a previous style (e.g. [styledBlock]) never leaves a style
+  ///   (width, height, font, align) applied.
+  PosStyles globalStyles = const PosStyles.defaults();
 
   PosFontType get globalFont => globalStyles.fontType ?? PosFontType.fontA;
 
@@ -378,7 +382,7 @@ abstract class Generator {
     }
 
     var line = ch * len;
-    return text(line, styles: styles);
+    return text(line, styles: styles, linesAfter: linesAfter);
   }
 
   /// Processes encoded text bytes for printing.

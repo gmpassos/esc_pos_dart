@@ -42,6 +42,9 @@ class QRCorrection {
 }
 
 class QRCode {
+  /// The maximum QR Code data length (in bytes).
+  static const maxDataLength = 7089;
+
   List<int> bytes = <int>[];
 
   QRCode(String text, QRSize size, QRCorrection level) {
@@ -55,9 +58,14 @@ class QRCode {
 
     // FN 180. QR Code: Store the data in the symbol storage area
     List<int> textBytes = encodeChars(text);
-    // pL pH cn fn m
+    if (textBytes.length > maxDataLength) {
+      throw ArgumentError(
+          'QR Code data too long: ${textBytes.length} > $maxDataLength bytes');
+    }
+    // pL pH cn fn m (pL pH: the data length + 3, in 2 bytes):
+    final n = textBytes.length + 3;
     bytes +=
-        cQrHeader.codeUnits + [textBytes.length + 3, 0x00, 0x31, 0x50, 0x30];
+        cQrHeader.codeUnits + [n & 0xFF, (n >> 8) & 0xFF, 0x31, 0x50, 0x30];
     bytes += textBytes;
 
     // FN 182. QR Code: Transmit the size information of the symbol data in the symbol storage area

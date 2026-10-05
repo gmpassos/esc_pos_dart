@@ -30,12 +30,18 @@ class EscPosToPrinterDocument {
   /// The default tab size (in chars), when `ESC D` is not defined.
   final int tabSize;
 
+  /// The empty lines before a cut that belong to the cut (the paper feed to
+  /// pass the cutter, added by [PrinterCommandCut] when printed: see
+  /// `Generator.cut(extraLines)`): they're not converted to a feed.
+  final int cutFeedLines;
+
   const EscPosToPrinterDocument({
     this.paperSize = PaperSize.mm80,
     this.detectHR = true,
     this.splitOnCut = true,
     this.dropEmptyDocuments = true,
     this.tabSize = 8,
+    this.cutFeedLines = 4,
   });
 
   /// Converts the [commands] into [PrinterDocument]s.
@@ -151,6 +157,7 @@ class _Converter {
             align: _align, size: cmd.size, correction: cmd.correction));
       case CommandEscPosCut():
         _flushLine();
+        _absorbCutFeed();
         _addCommand(PrinterCommandCut(full: cmd.full));
         if (options.splitOnCut) {
           _closeDocument();
@@ -195,6 +202,11 @@ class _Converter {
     _height = 1;
     _fontType = 'a';
     _tabStops = null;
+    // `ESC @` also resets the barcode settings:
+    _barcodeWidth = null;
+    _barcodeHeight = null;
+    _barcodeHriPosition = null;
+    _barcodeHriFont = null;
   }
 
   void _setBarcodeSetting(CommandEscPosBarcodeSetting cmd) {
@@ -396,6 +408,20 @@ class _Converter {
     }
 
     _addCommand(PrinterCommandImage(image, align: _stripesAlign));
+  }
+
+  /// Removes the [EscPosToPrinterDocument.cutFeedLines] from a feed just
+  /// before a cut (the cut adds them when printed).
+  void _absorbCutFeed() {
+    var last = _commands.lastOrNull;
+    if (last is! PrinterCommandFeed) return;
+
+    var n = last.n - options.cutFeedLines;
+    if (n > 0) {
+      _commands[_commands.length - 1] = PrinterCommandFeed(n);
+    } else {
+      _commands.removeLast();
+    }
   }
 
   void _addFeed(int n) {

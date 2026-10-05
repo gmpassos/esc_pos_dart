@@ -35,6 +35,51 @@
 - New tests: `test/decoder_esc_pos_test.dart` (sequences, generator round-trips with pixel comparison, JSON,
   truncated prefixes, fuzz, streaming split at every byte, code tables, converter end-to-end).
 
+- Fixes (review):
+  - `GeneratorEscPos`:
+    - Images: any input format (grayscale/1-channel, palette, 16-bit...) is normalized to 8-bit RGBA, with
+      transparent pixels as white. 1-channel images used to print all white (`image`) or black (`imageRaster`),
+      and transparent pixels black (`imageRaster`).
+    - `image` (`ESC *`): no extra blank stripe when the height is a multiple of 24.
+    - `imageRaster`: `GS v 0` density bits fixed (horizontal/vertical were swapped); `graphics` data larger than
+      64 KB uses `GS 8 L` (4-byte length; was truncated).
+    - `_intLowHigh`: correct maximum (`(1 << 8n) - 1`; the operator precedence allowed overflowing values).
+    - `row`: the overflowing text of a column is printed in the next rows (was dropped); no infinite recursion when
+      a column can't hold 1 char; mixed Chinese text: one position per column; positions encoded with
+      `_intLowHigh` (removed the `hex` dependency).
+    - Code tables: the text is encoded with the code table sent to the printer (`ESC t`) by `reset`,
+      `setGlobalCodeTable` and `setStyles(codeTable:)` (it was encoded as latin1 after a `reset`, e.g. `é` printed
+      as `Θ` in CP437); `selectCharCodeTable` updates `globalStyles.codeTable`.
+    - `printCodeTable`: restores the previous code table (forced) and prints only the printable bytes (`32..255`).
+    - `globalStyles` starts with the printer defaults: a style (width, height, font, align) is restored after a
+      styled text/image even without a `reset`.
+    - `feed`/`reverseFeed`: values larger than 255 are split (were dropped / overflowed).
+    - `hr`: `linesAfter` is applied (`GenericPrinter.hr` also forwards `len`).
+  - `QRCode`: data larger than 252 bytes (2-byte `pL pH`; the length overflowed), maximum `7089` bytes.
+  - `Barcode`: `_convertData` keeps all the chars of each element (`Barcode.code128(['{A', '1'])`).
+  - `NetworkPrinter`:
+    - Default port `9100` (was `91000`, invalid).
+    - A connection closed/reset by the printer doesn't crash the process (unhandled `SocketException`) and
+      `isConnected` becomes `false`.
+    - `connect` to another host/port reconnects; `disconnect` before `connect` doesn't throw.
+    - `disconnect` flushes and closes the socket before destroying it (pending data was discarded); new `flush`.
+    - `transmissionOfStatus`: `timeout` parameter (waited forever), ignores previously received bytes, returns
+      `null` without a reply.
+  - `PrinterDocument.toString` with no commands (threw `StateError`).
+  - `PrinterCommandImage.fromJson`: optional `mimeType` (PNG/JPEG detected by signature) and `align`; raw RGB data
+    length is validated.
+  - `PrinterCommandCut.fromJson`: `full` defaults to `true`.
+  - `CapabilityProfile`: `getCodePageId` is case-insensitive; new `getCodePageName`; `capabilities.json` is loaded
+    once (cached).
+  - `DecoderEscPos` (strict): after a `FormatException` the decoder can be reused (the invalid/truncated data was
+    decoded again by the next call).
+  - `EscPosToPrinterDocument`: `ESC @` resets the barcode settings; the feed of a cut (`cutFeedLines`, default 4,
+    added by `Generator.cut`) is not converted to a feed (document -> bytes -> document is now a fixed point).
+  - New `codePageCharset` (profile code page name -> charset).
+- Tests: `generator_test.dart`, `network_printer_test.dart` (integration: a local fake printer socket),
+  `models_test.dart` (round trips document -> bytes -> document and JSON -> bytes). 101 tests; coverage 93.7%
+  (was 77.2%).
+
 ## 1.3.2
 
 - `PrinterDocument`:

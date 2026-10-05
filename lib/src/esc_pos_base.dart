@@ -123,7 +123,8 @@ class PrinterDocument {
     var lines = commands.map((e) => e.toString()).toList();
 
     var maxLine =
-        lines.map((e) => e.replaceAll('\n', '').trimRight().length).max;
+        lines.map((e) => e.replaceAll('\n', '').trimRight().length).maxOrNull ??
+            0;
 
     if (maxLine > 10) {
       var hr = '${'-' * 10}\n';
@@ -470,7 +471,7 @@ class PrinterCommandCut extends PrinterCommand {
 
   factory PrinterCommandCut.fromJson(Map<String, dynamic> j) =>
       PrinterCommandCut(
-        full: j['full'] as bool,
+        full: (j['full'] as bool?) ?? true,
       );
 
   @override
@@ -508,13 +509,18 @@ class PrinterCommandImage extends PrinterCommand {
         j['width'] as int,
         j['height'] as int,
         j['image'] as String,
-        mimeType: j['mimeType'] as String,
-        align: PosAlign.from(j['align'] as String) ?? PosAlign.center,
+        mimeType: j['mimeType'] as String?,
+        align: PosAlign.from(j['align'] as String?) ?? PosAlign.center,
       );
 
+  /// Decodes an image (PNG, JPEG or raw RGB bytes).
+  /// - If [mimeType] is not defined, PNG and JPEG are detected by their
+  ///   signature, otherwise [bytes] are handled as raw RGB (`width * height * 3`).
   static Image decodeImage(int width, int height, List<int> bytes,
       {String? mimeType}) {
     var bytesUint8 = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+
+    mimeType ??= _detectMimeType(bytesUint8);
 
     switch (mimeType?.trim().toLowerCase()) {
       case 'image/png':
@@ -532,6 +538,13 @@ class PrinterCommandImage extends PrinterCommand {
         }
       default:
         {
+          var expectedLength = width * height * 3;
+          if (width <= 0 || height <= 0 || bytesUint8.length < expectedLength) {
+            throw ArgumentError(
+                "Invalid raw RGB image data: ${bytesUint8.length} bytes "
+                "(expected $expectedLength for ${width}x$height)");
+          }
+
           return Image.fromBytes(
               width: width,
               height: height,
@@ -539,6 +552,23 @@ class PrinterCommandImage extends PrinterCommand {
               bytesOffset: bytesUint8.offsetInBytes);
         }
     }
+  }
+
+  static String? _detectMimeType(Uint8List bytes) {
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return 'image/jpeg';
+    }
+    return null;
   }
 
   @override
