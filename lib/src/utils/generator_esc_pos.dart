@@ -694,7 +694,8 @@ class GeneratorEscPos extends Generator {
       header1.addAll([48, 112, 48]); // m=48, fn=112, a=48
       header1.addAll([1, 1]); // bx=1, by=1
       header1.addAll([49]); // c=49
-      header1.addAll(_intLowHigh(widthBytes, 2)); // xL xH
+      // Horizontal number of dots (padded to a multiple of 8, as the data):
+      header1.addAll(_intLowHigh(widthBytes * 8, 2)); // xL xH
       header1.addAll(_intLowHigh(heightPx, 2)); // yL yH
       bytes += List.from(header1)..addAll(resterizedData);
 
@@ -980,4 +981,6 @@ enum CharCodeTableEscPos {
       CharCodeTableEscPos.values.firstWhereOrNull((e) => e.code == code);
 
   CharsetEncoder? get encoder => getCharsetEncoder(charset);
+
+  CharsetDecoder? get decoder => getCharsetDecoder(charset);
 }

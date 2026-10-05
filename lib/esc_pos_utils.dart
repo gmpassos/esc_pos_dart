@@ -12,6 +12,7 @@ export 'src/utils/capability_profile.dart';
 export 'src/utils/decoder.dart';
 export 'src/utils/decoder_esc_pos.dart';
 export 'src/utils/enums.dart';
+export 'src/utils/escpos_to_document.dart';
 export 'src/utils/generator.dart';
 export 'src/utils/generator_esc_pos.dart';
 export 'src/utils/pos_column.dart';

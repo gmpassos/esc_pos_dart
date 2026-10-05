@@ -33,6 +33,53 @@ class BarcodeType {
 
   /// CODE128
   static const code128 = BarcodeType._internal(73);
+
+  static const _types = [
+    upcA,
+    upcE,
+    ean13,
+    ean8,
+    code39,
+    itf,
+    codabar,
+    code128
+  ];
+
+  /// Returns the [BarcodeType] of the `GS k` [value] (`m`).
+  /// - Values `0..6` use the NUL-terminated form, `65..79` the length-prefixed form.
+  static BarcodeType fromValue(int value) =>
+      _types.firstWhere((t) => t.value == value,
+          orElse: () => BarcodeType._internal(value));
+
+  /// The barcode type name (e.g. `code128`), or `type<value>` if unknown.
+  String get name => switch (value) {
+        0 || 65 => 'upcA',
+        1 || 66 => 'upcE',
+        2 || 67 => 'ean13',
+        3 || 68 => 'ean8',
+        4 || 69 => 'code39',
+        5 || 70 => 'itf',
+        6 || 71 => 'codabar',
+        72 => 'code93',
+        73 => 'code128',
+        74 => 'gs1_128',
+        75 => 'gs1_databar_omnidirectional',
+        76 => 'gs1_databar_truncated',
+        77 => 'gs1_databar_limited',
+        78 => 'gs1_databar_expanded',
+        79 => 'code128_auto',
+        _ => 'type$value',
+      };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is BarcodeType && value == other.value;
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  String toString() => 'BarcodeType($name)';
 }
 
 class BarcodeText {
@@ -255,6 +302,13 @@ class Barcode {
 
     _type = BarcodeType.code128;
     _data = _convertData(barcodeData);
+  }
+
+  /// A barcode of [type] with its already encoded [data] bytes,
+  /// without validation (e.g. a barcode decoded from ESC/POS `GS k`).
+  Barcode.raw(BarcodeType type, List<int> data) {
+    _type = type;
+    _data = List<int>.from(data);
   }
 
   BarcodeType? _type;
