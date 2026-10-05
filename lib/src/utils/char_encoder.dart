@@ -15,6 +15,32 @@ CharsetEncoder? getCharsetEncoder(String? name) =>
 CharsetDecoder? getCharsetDecoder(String? name) =>
     getCharsetCodePage(name)?.decoder;
 
+/// Returns the charset name of a printer code page [codePageName]
+/// (as defined in the `CapabilityProfile`, e.g. `CP437`, `CP1252`,
+/// `ISO_8859-15`), or `null` if not supported.
+String? codePageCharset(String? codePageName) {
+  if (codePageName == null) return null;
+  var name = codePageName.trim().toUpperCase();
+
+  String? charsetName;
+  if (RegExp(r'^CP(87\d|12\d\d)$').hasMatch(name)) {
+    // Windows code pages (`CP1252` -> `windows1252`):
+    charsetName = 'windows${name.substring(2)}';
+  } else if (name.startsWith('CP')) {
+    charsetName = name.toLowerCase();
+  } else {
+    charsetName = switch (name) {
+      'ISO_8859-1' || 'ISO-8859-1' || 'LATIN1' => 'windows1252',
+      'ISO_8859-2' || 'ISO-8859-2' => 'latin-2',
+      'ISO_8859-7' || 'ISO-8859-7' => 'greek',
+      'ISO_8859-15' || 'ISO-8859-15' => 'latin-9',
+      _ => null,
+    };
+  }
+
+  return getCharsetCodePage(charsetName) != null ? charsetName : null;
+}
+
 /// Returns the [charset.CodePage] of the charset [name]
 /// (e.g. `cp437`, `cp850`, `windows1252`, `latin-2`), or `null` if unknown.
 charset.CodePage? getCharsetCodePage(String? name) {

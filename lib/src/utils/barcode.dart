@@ -314,8 +314,9 @@ class Barcode {
   BarcodeType? _type;
   List<int>? _data;
 
+  /// All the chars of each element (e.g. `['{A', '1', '2']` -> `{A12`).
   List<int> _convertData(List<dynamic> list) =>
-      list.map((dynamic d) => d.toString().codeUnitAt(0)).toList();
+      list.expand((dynamic d) => d.toString().codeUnits).toList();
 
   int _charcode(dynamic ch) => ch.toString().codeUnitAt(0);
 

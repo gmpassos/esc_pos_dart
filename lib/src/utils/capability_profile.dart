@@ -23,12 +23,22 @@ class CapabilityProfile {
 
   CapabilityProfile._internal(this.name, this.codePages);
 
+  static Future<Map>? _capabilities;
+
+  /// The `capabilities.json` (loaded and parsed once).
+  static Future<Map> _loadCapabilities() => _capabilities ??=
+          Resource('package:esc_pos_dart/resources/capabilities.json')
+              .readAsString()
+              .then((content) => json.decode(content) as Map)
+              .catchError((Object e) {
+        // Allow a new attempt:
+        _capabilities = null;
+        throw e;
+      });
+
   /// Public factory
   static Future<CapabilityProfile> load({String name = 'default'}) async {
-    final content =
-        await Resource('package:esc_pos_dart/resources/capabilities.json')
-            .readAsString();
-    Map capabilities = json.decode(content);
+    Map capabilities = await _loadCapabilities();
 
     var profile = capabilities['profiles'][name];
 
@@ -45,19 +55,28 @@ class CapabilityProfile {
     return CapabilityProfile._internal(name, list);
   }
 
+  /// Returns the `ESC t` ID of the [codePage] name (case-insensitive).
   int getCodePageId(String? codePage) {
+    var name = codePage?.trim().toUpperCase();
     return codePages
-        .firstWhere((cp) => cp.name == codePage,
+        .firstWhere((cp) => cp.name.toUpperCase() == name,
             orElse: () => throw Exception(
                 "Code Page '$codePage' isn't defined for this profile"))
         .id;
   }
 
+  /// Returns the code page name of the `ESC t` [id], or `null` if not defined.
+  String? getCodePageName(int id) {
+    for (var cp in codePages) {
+      if (cp.id == id) {
+        return cp.name == 'Unknown' ? null : cp.name;
+      }
+    }
+    return null;
+  }
+
   static Future<List<dynamic>> getAvailableProfiles() async {
-    final content =
-        await Resource('package:esc_pos_dart/resources/capabilities.json')
-            .readAsString();
-    Map capabilities = json.decode(content);
+    Map capabilities = await _loadCapabilities();
 
     var profiles = capabilities['profiles'];
 

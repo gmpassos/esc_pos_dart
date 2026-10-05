@@ -53,6 +53,8 @@ const cReverseFeedN = '${esc}e'; // Print and reverse feed n lines [N]
 
 // Bit Image
 const cRasterImg = '$gs(L'; // Print image - raster bit format (graphics)
+const cRasterImgLarge =
+    '${gs}8L'; // Print image - graphics with a 4-byte data length (p1 p2 p3 p4)
 const cRasterImg2 =
     '${gs}v0'; // Print image - raster bit format (bitImageRaster) [obsolete]
 const cBitImg = '$esc*'; // Print image - column format

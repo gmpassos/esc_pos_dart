@@ -9,7 +9,6 @@
 import 'dart:typed_data' show Uint8List;
 
 import 'package:collection/collection.dart';
-import 'package:hex/hex.dart';
 import 'package:image/image.dart';
 
 import 'barcode.dart';
@@ -45,11 +44,11 @@ class GeneratorEscPos extends Generator {
   /// [value] Input number
   /// [bytesNb] The number of bytes to output (1 - 4)
   List<int> _intLowHigh(int value, int bytesNb) {
-    final maxInput = 256 << (bytesNb * 8) - 1;
-
     if (bytesNb < 1 || bytesNb > 4) {
       throw Exception('Can only output 1-4 bytes');
     }
+
+    final maxInput = (1 << (bytesNb * 8)) - 1;
 
     if (value < 0 || value > maxInput) {
       throw Exception(
@@ -66,6 +65,24 @@ class GeneratorEscPos extends Generator {
   }
 
   static final _colorRGBABlack = ColorRgba8(0, 0, 0, 255);
+  static final _colorRGBAWhite = ColorRgba8(255, 255, 255, 255);
+
+  /// Returns a copy of [imgSrc] as an 8-bit RGBA image, with transparent
+  /// pixels composited over white (as printed on paper).
+  /// - Supports any input format (grayscale, palette, 16-bit, float...).
+  static Image normalizeImage(Image imgSrc) {
+    final image = imgSrc.convert(format: Format.uint8, numChannels: 4);
+
+    final normalized = Image(
+      width: image.width,
+      height: image.height,
+      numChannels: 4,
+    );
+    fill(normalized, color: _colorRGBAWhite);
+    compositeImage(normalized, image, dstX: 0, dstY: 0);
+
+    return normalized;
+  }
 
   /// Extract slices of an image as equal-sized blobs of column-format data.
   ///
@@ -74,8 +91,8 @@ class GeneratorEscPos extends Generator {
   List<List<int>> _toColumnFormat(Image imgSrc, int lineHeight) {
     final image = Image.from(imgSrc); // make a copy
 
-    // Determine new width: closest integer that is divisible by lineHeight
-    final widthPx = (image.width + lineHeight) - (image.width % lineHeight);
+    // Determine new width: the smallest multiple of `lineHeight`:
+    final widthPx = ((image.width + lineHeight - 1) ~/ lineHeight) * lineHeight;
     final heightPx = image.height;
 
     // Create a black bottom layer
@@ -103,7 +120,7 @@ class GeneratorEscPos extends Generator {
 
   /// Image rasterization
   List<int> _toRasterFormat(Image imgSrc) {
-    final image = Image.from(imgSrc); // make a copy
+    final image = normalizeImage(imgSrc);
     final widthPx = image.width;
     final heightPx = image.height;
 
@@ -219,6 +236,21 @@ class GeneratorEscPos extends Generator {
     _selectedCharsetEncoder = null;
   }
 
+  /// Selects the text encoder of the code page [codePageName] (of the profile),
+  /// matching the `ESC t` sent to the printer (see [encode]).
+  void _selectCodePageEncoder(String codePageName, int id) {
+    _selectedCharCodeTable = id;
+    _selectedCharset = codePageCharset(codePageName);
+    _selectedCharsetEncoder = getCharsetEncoder(_selectedCharset);
+  }
+
+  /// `ESC t n` for the profile code page [codePageName] (and its encoder).
+  List<int> _codeTableCommand(String codePageName) {
+    var id = _profile.getCodePageId(codePageName);
+    _selectCodePageEncoder(codePageName, id);
+    return [...cCodeTable.codeUnits, id];
+  }
+
   @override
   List<int> selectCharCodeTable({int codeTable = 0}) {
     _selectedCharCodeTable = codeTable;
@@ -226,6 +258,12 @@ class GeneratorEscPos extends Generator {
     var charCodeTableEscPos = CharCodeTableEscPos.fromCode(codeTable);
     _selectedCharset = charCodeTableEscPos?.charset;
     _selectedCharsetEncoder = charCodeTableEscPos?.encoder;
+
+    // Keep `globalStyles` consistent with the selected table:
+    var codePageName = _profile.getCodePageName(codeTable);
+    if (codePageName != null) {
+      globalStyles = globalStyles.copyWith(codeTable: codePageName);
+    }
 
     var bytes = cCodeTable.codeUnits;
     bytes += [codeTable & 0xFF];
@@ -242,11 +280,8 @@ class GeneratorEscPos extends Generator {
   List<int> setGlobalCodeTable(String? codeTable, {bool force = false}) {
     List<int> bytes;
     if (codeTable != null && (force || globalStyles.codeTable != codeTable)) {
+      bytes = _codeTableCommand(codeTable);
       globalStyles = globalStyles.copyWith(codeTable: codeTable);
-      bytes = <int>[
-        ...cCodeTable.codeUnits,
-        _profile.getCodePageId(codeTable),
-      ];
     } else {
       bytes = [];
     }
@@ -303,10 +338,7 @@ class GeneratorEscPos extends Generator {
     // Set local code table
     final codeTable = styles.codeTable;
     if (codeTable != null && globalStyles.codeTable != codeTable) {
-      bytes += [
-        ...cCodeTable.codeUnits,
-        _profile.getCodePageId(codeTable),
-      ];
+      bytes += _codeTableCommand(codeTable);
       globalStyles = globalStyles.copyWith(codeTable: codeTable);
     }
 
@@ -425,8 +457,11 @@ class GeneratorEscPos extends Generator {
   @override
   List<int> feed(int lines) {
     var bytes = <int>[];
-    if (lines >= 0 && lines <= 255) {
-      bytes = [...cFeedN.codeUnits, lines];
+    // `ESC d n` accepts up to 255 lines: split larger feeds.
+    while (lines > 0) {
+      var n = lines > 255 ? 255 : lines;
+      bytes += [...cFeedN.codeUnits, n];
+      lines -= n;
     }
     return bytes;
   }
@@ -467,11 +502,12 @@ class GeneratorEscPos extends Generator {
       ];
     }
 
-    bytes += List<int>.generate(256, (i) => i);
+    // Printable chars only (bytes `0..31` are control commands):
+    bytes += List<int>.generate(256 - 32, (i) => 32 + i);
 
     if (codeTable != null && prevCodeTable != codeTable) {
-      // Back to initial code table
-      bytes += setGlobalCodeTable(prevCodeTable);
+      // Back to initial code table (`globalStyles` wasn't changed: force it)
+      bytes += setGlobalCodeTable(prevCodeTable, force: true);
     }
 
     return bytes;
@@ -499,7 +535,13 @@ class GeneratorEscPos extends Generator {
 
   @override
   List<int> reverseFeed(int n) {
-    var bytes = <int>[...cReverseFeedN.codeUnits, n];
+    var bytes = <int>[];
+    // `ESC e n` accepts up to 255 lines: split larger feeds.
+    while (n > 0) {
+      var m = n > 255 ? 255 : n;
+      bytes += [...cReverseFeedN.codeUnits, m];
+      n -= m;
+    }
     return bytes;
   }
 
@@ -521,7 +563,9 @@ class GeneratorEscPos extends Generator {
       var fromPos = _colIndToPosition(colInd);
       final toPos =
           _colIndToPosition(colInd + cols[i].width) - spaceBetweenRows;
+      // At least 1 char per row (otherwise the text is never consumed):
       int maxCharactersNb = ((toPos - fromPos) / charWidth).floor();
+      if (maxCharactersNb < 1) maxCharactersNb = 1;
 
       if (!cols[i].containsChinese) {
         // CASE 1: containsChinese = false
@@ -566,6 +610,10 @@ class GeneratorEscPos extends Generator {
           counter += w;
           splitPos += 1;
         }
+        // Consume at least 1 char (otherwise the text is never consumed):
+        if (splitPos == 0 && cols[i].text.isNotEmpty) {
+          splitPos = 1;
+        }
         String toPrintNextRow = cols[i].text.substring(splitPos);
         String toPrint = cols[i].text.substring(0, splitPos);
 
@@ -586,16 +634,18 @@ class GeneratorEscPos extends Generator {
         final (lexemes, isLexemeChinese) = getLexemes(toPrint);
 
         // Print each lexeme using codetable OR kanji
+        int? lexemeColInd = colInd;
         for (var j = 0; j < lexemes.length; ++j) {
           bytes += _text(
             encode(lexemes[j], isKanji: isLexemeChinese[j]),
             styles: cols[i].styles,
-            colInd: colInd,
+            colInd: lexemeColInd,
             colWidth: cols[i].width,
             isKanji: isLexemeChinese[j],
           );
-          // Define the absolute position only once (we print one line only)
-          // colInd = null;
+          // Define the absolute position only once (the following lexemes
+          // continue after the previous one):
+          lexemeColInd = null;
         }
       }
     }
@@ -603,7 +653,7 @@ class GeneratorEscPos extends Generator {
     bytes += emptyLines(1);
 
     if (isNextRow) {
-      row(nextRow);
+      bytes += row(nextRow);
     }
     return bytes;
   }
@@ -615,7 +665,8 @@ class GeneratorEscPos extends Generator {
     // Image alignment
     var bytes = setStyles(const PosStyles().copyWith(align: align));
 
-    final Image image = Image.from(imgSrc); // make a copy
+    // 8-bit RGBA copy (any input format; transparent pixels as white):
+    final Image image = normalizeImage(imgSrc);
     //const bool highDensityHorizontal = true;
     //const bool highDensityVertical = true;
 
@@ -678,9 +729,10 @@ class GeneratorEscPos extends Generator {
     final List<int> resterizedData = _toRasterFormat(image);
 
     if (imageFn == PosImageFn.bitImageRaster) {
-      // GS v 0
+      // GS v 0: m bit 0 = double width (low horizontal density),
+      // bit 1 = double height (low vertical density).
       final int densityByte =
-          (highDensityVertical ? 0 : 1) + (highDensityHorizontal ? 0 : 2);
+          (highDensityHorizontal ? 0 : 1) + (highDensityVertical ? 0 : 2);
 
       final List<int> header = List.from(cRasterImg2.codeUnits);
       header.add(densityByte); // m
@@ -688,9 +740,17 @@ class GeneratorEscPos extends Generator {
       header.addAll(_intLowHigh(heightPx, 2)); // yL yH
       bytes += List.from(header)..addAll(resterizedData);
     } else if (imageFn == PosImageFn.graphics) {
-      // 'GS ( L' - FN_112 (Image data)
-      final List<int> header1 = List.from(cRasterImg.codeUnits);
-      header1.addAll(_intLowHigh(widthBytes * heightPx + 10, 2)); // pL pH
+      // 'GS ( L' - FN_112 (Image data), or 'GS 8 L' (4-byte length) if the
+      // data doesn't fit in 2 bytes (pL pH):
+      final dataLength = widthBytes * heightPx + 10;
+      final List<int> header1;
+      if (dataLength <= 0xFFFF) {
+        header1 = List.from(cRasterImg.codeUnits);
+        header1.addAll(_intLowHigh(dataLength, 2)); // pL pH
+      } else {
+        header1 = List.from(cRasterImgLarge.codeUnits);
+        header1.addAll(_intLowHigh(dataLength, 4)); // p1 p2 p3 p4
+      }
       header1.addAll([48, 112, 48]); // m=48, fn=112, a=48
       header1.addAll([1, 1]); // bx=1, by=1
       header1.addAll([49]); // c=49
@@ -838,14 +898,10 @@ class GeneratorEscPos extends Generator {
         }
       }
 
-      final hexStr = fromPos.round().toRadixString(16).padLeft(3, '0');
-      final hexPair = HEX.decode(hexStr);
-
-      // Position
+      // Position (`ESC $ nL nH`):
       bytes += <int>[
         ...cPos.codeUnits,
-        hexPair[1],
-        hexPair[0],
+        ..._intLowHigh(fromPos.round().clamp(0, 0xFFFF), 2),
       ];
     }
 

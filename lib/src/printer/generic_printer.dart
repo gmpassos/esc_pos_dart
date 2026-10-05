@@ -168,7 +168,8 @@ abstract class GenericPrinter {
       int? len,
       int linesAfter = 0,
       PosStyles styles = const PosStyles()}) {
-    writeBytes(_generator.hr(ch: ch, linesAfter: linesAfter, styles: styles));
+    writeBytes(_generator.hr(
+        ch: ch, len: len, linesAfter: linesAfter, styles: styles));
   }
 
   void textEncoded(
