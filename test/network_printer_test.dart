@@ -54,9 +54,23 @@ class FakePrinter {
 
   int get port => server.port;
 
-  /// Waits until the client closes the connection.
-  Future<void> waitClosed() =>
-      Future.wait(_done.map((c) => c.future)).timeout(Duration(seconds: 10));
+  /// Waits until [connections] connections were accepted and closed by the
+  /// client.
+  /// - The server may accept a connection after the client already wrote and
+  ///   closed it: wait for the accepted connections first.
+  Future<void> waitClosed({int connections = 1}) async {
+    var timeout = DateTime.now().add(Duration(seconds: 10));
+
+    while (_done.length < connections) {
+      if (DateTime.now().isAfter(timeout)) {
+        throw TimeoutException('Connections not accepted: $connections');
+      }
+      await Future.delayed(Duration(milliseconds: 10));
+    }
+
+    await Future.wait(_done.map((c) => c.future))
+        .timeout(timeout.difference(DateTime.now()));
+  }
 
   Future<void> close() async {
     for (var s in sockets) {
