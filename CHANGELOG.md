@@ -1,3 +1,40 @@
+## 1.4.0
+
+- `DecoderEscPos`:
+  - New options: `lenient`, `textDecoding` (`EscPosTextDecoding.latin1`/`codeTable`), `defaultCodeTable`,
+    `detectUtf8`, `maxBarcodeDataLength`. Defaults keep the previous (strict, latin1) behavior.
+  - Lenient mode never throws: unknown/invalid commands → `CommandEscPosUnknown`, a command truncated at the end of
+    the data → `CommandEscPosTruncated` (see `warnings`: `DecoderWarning`). Ignorable control chars are dropped.
+  - Streaming API: `add(chunk)` + `close()` (a command split between chunks is decoded when complete);
+    `decode` is a complete block. New `commands`, `consumedBytes`, `pendingBytes`.
+  - Bounds-checked parsing: truncated data throws a `FormatException` (strict) instead of a `RangeError`.
+  - Decodes the ESC/GS/FS/DLE commands sent by POS software and by `GeneratorEscPos` itself (previously a
+    `FormatException`): underline, reverse, turn90, upside-down, double-strike, print mode (`ESC !`), feed dots,
+    raster images (`GS v 0`, `GS ( L`, `GS 8 L`), barcodes (`GS k`, both forms) and settings, QR Codes (`GS ( k`),
+    cash drawer (`ESC p`, `DLE DC4`), beeper, Kanji (`FS &`/`FS .`), international charset, status requests
+    (`DLE EOT`, `GS r`, `GS a`, `GS I`, `ESC u`, `ESC v`), and many generic/setup commands (skipped with their
+    parameters).
+  - New commands (with `toJson`/`fromJson`): `CommandEscPosUnderline`, `CommandEscPosReverse`, `CommandEscPosTurn90`,
+    `CommandEscPosUpsideDown`, `CommandEscPosDoubleStrike`, `CommandEscPosPrintMode`, `CommandEscPosFeedDots`,
+    `CommandEscPosRasterImage` (`toImage()`), `CommandEscPosBarcode`, `CommandEscPosBarcodeSetting`,
+    `CommandEscPosQRCode`, `CommandEscPosDrawer`, `CommandEscPosBeep`, `CommandEscPosKanji`,
+    `CommandEscPosIntlCharset`, `CommandEscPosStatusRequest`, `CommandEscPosUnknown`, `CommandEscPosTruncated`.
+  - `CommandEscPosBitImage.toImage()`: decodes the column format (scaled to the printer resolution).
+  - `CommandEscPosCut`: optional `feed` (`GS V 65..104 n`); `GS V '0'`/`'1'` and `ESC i`/`ESC m` decoded.
+  - Fixed: `GS !` with bytes `>= 0x80` (crash); `ESC a '2'` (right); bold uses the low bit; text pending before an
+    end of job (`FF`) is now emitted before `end_job` (was emitted after it).
+- `EscPosToPrinterDocument` (new): converts decoded commands into `PrinterDocument`s (text lines with styles, HR,
+  feeds, tabs/absolute positions, images, barcodes, QR Codes; split by cut/end of job).
+- `PrinterDocument`:
+  - New commands: `PrinterCommandBarcode`, `PrinterCommandQRCode` (`PrinterCommandType.barcode`/`qrcode`).
+  - `fromJson`: new `ignoreUnknownCommands` parameter.
+- `Barcode.raw` and `BarcodeType.fromValue`/`name`.
+- `getCharsetDecoder`, `getCharsetCodePage` and `CharCodeTableEscPos.decoder`.
+- `GeneratorEscPos.imageRaster(imageFn: PosImageFn.graphics)`: `GS ( L` width (`xL xH`) is now in dots (was bytes).
+- `NetworkPrinter.ensureConnected`: no `Future` returned inside the `try` block.
+- New tests: `test/decoder_esc_pos_test.dart` (sequences, generator round-trips with pixel comparison, JSON,
+  truncated prefixes, fuzz, streaming split at every byte, code tables, converter end-to-end).
+
 ## 1.3.2
 
 - `PrinterDocument`:

@@ -60,9 +60,9 @@ class NetworkPrinter extends GenericPrinter {
 
       _socket.listen(_addInputBytes);
 
-      return Future<PosPrintResult>.value(PosPrintResult.success);
+      return PosPrintResult.success;
     } catch (e) {
-      return Future<PosPrintResult>.value(PosPrintResult.timeout);
+      return PosPrintResult.timeout;
     }
   }
 

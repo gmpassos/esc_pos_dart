@@ -6,9 +6,11 @@ import 'package:image/image.dart';
 
 import 'printer/generic_printer.dart';
 import 'printer/network_printer.dart';
+import 'utils/barcode.dart';
 import 'utils/enums.dart';
 import 'utils/pos_column.dart';
 import 'utils/pos_styles.dart';
+import 'utils/qrcode.dart';
 
 /// An ESC/POS printer document.
 /// See [NetworkPrinter].
@@ -25,8 +27,16 @@ class PrinterDocument {
             fontType.trim().isNotEmpty ? fontType.trim().toLowerCase() : 'a',
         fontSize = fontSize.clamp(1, 8).toInt();
 
-  factory PrinterDocument.fromJson(Map<String, dynamic> j) => PrinterDocument(
+  /// - If [ignoreUnknownCommands] is `true`, commands with an unknown `type`
+  ///   are skipped (otherwise throws an [ArgumentError]).
+  factory PrinterDocument.fromJson(Map<String, dynamic> j,
+          {bool ignoreUnknownCommands = false}) =>
+      PrinterDocument(
         commands: (j['commands'] as List)
+            .cast<Map<String, dynamic>>()
+            .where((e) =>
+                !ignoreUnknownCommands ||
+                parsePrinterCommandType(e['type']) != null)
             .map((e) => PrinterCommand.fromJson(e))
             .toList(),
         fontType: j['fontType'] ?? 'a',
@@ -139,6 +149,8 @@ enum PrinterCommandType {
   feed,
   cut,
   image,
+  barcode,
+  qrcode,
 }
 
 PrinterCommandType? parsePrinterCommandType(Object? o) {
@@ -162,6 +174,10 @@ PrinterCommandType? parsePrinterCommandType(Object? o) {
       return PrinterCommandType.cut;
     case 'image':
       return PrinterCommandType.image;
+    case 'barcode':
+      return PrinterCommandType.barcode;
+    case 'qrcode':
+      return PrinterCommandType.qrcode;
     default:
       return null;
   }
@@ -265,6 +281,10 @@ abstract class PrinterCommand {
         return PrinterCommandCut.fromJson(j);
       case PrinterCommandType.image:
         return PrinterCommandImage.fromJson(j);
+      case PrinterCommandType.barcode:
+        return PrinterCommandBarcode.fromJson(j);
+      case PrinterCommandType.qrcode:
+        return PrinterCommandQRCode.fromJson(j);
     }
   }
 
@@ -548,4 +568,138 @@ class PrinterCommandImage extends PrinterCommand {
   @override
   String toString() =>
       '(image width=${image.width} height=${image.height} align="${align.name}" type="${type.name}")\n';
+}
+
+/// A barcode command (`GS k`).
+class PrinterCommandBarcode extends PrinterCommand {
+  /// The ESC/POS barcode type (`GS k m`), see [BarcodeType].
+  final int barcodeType;
+
+  /// The barcode data (as printed).
+  final String data;
+
+  final PosAlign align;
+
+  /// Module width (`GS w n`).
+  final int? width;
+
+  /// Height in dots (`GS h n`).
+  final int? height;
+
+  /// HRI characters position (`GS H n`): `0` none, `1` above, `2` below, `3` both.
+  final int? hriPosition;
+
+  /// HRI characters font (`GS f n`).
+  final int? hriFont;
+
+  PrinterCommandBarcode(this.barcodeType, this.data,
+      {this.align = PosAlign.center,
+      this.width,
+      this.height,
+      this.hriPosition,
+      this.hriFont});
+
+  factory PrinterCommandBarcode.fromJson(Map<String, dynamic> j) =>
+      PrinterCommandBarcode(
+        j['barcodeType'] as int,
+        j['data'] as String,
+        align: PosAlign.from(j['align']) ?? PosAlign.center,
+        width: j['width'] as int?,
+        height: j['height'] as int?,
+        hriPosition: j['hriPosition'] as int?,
+        hriFont: j['hriFont'] as int?,
+      );
+
+  /// The barcode type name (e.g. `code128`).
+  String get typeName => BarcodeType.fromValue(barcodeType).name;
+
+  @override
+  PrinterCommandType get type => PrinterCommandType.barcode;
+
+  @override
+  void print(GenericPrinter printer) => printer.barcode(
+        Barcode.raw(BarcodeType.fromValue(barcodeType), latin1.encode(data)),
+        width: width,
+        height: height,
+        font: switch (hriFont) {
+          0 || 0x30 => BarcodeFont.fontA,
+          1 || 0x31 => BarcodeFont.fontB,
+          _ => null,
+        },
+        textPos: switch (hriPosition) {
+          0 || 0x30 => BarcodeText.none,
+          1 || 0x31 => BarcodeText.above,
+          3 || 0x33 => BarcodeText.both,
+          _ => BarcodeText.below,
+        },
+        align: align,
+      );
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        'barcodeType': barcodeType,
+        'typeName': typeName,
+        'data': data,
+        'align': align.name,
+        if (width != null) 'width': width,
+        if (height != null) 'height': height,
+        if (hriPosition != null) 'hriPosition': hriPosition,
+        if (hriFont != null) 'hriFont': hriFont,
+      };
+
+  @override
+  String toString() => '[BARCODE $typeName: $data]\n';
+}
+
+/// A QR Code command (`GS ( k`).
+class PrinterCommandQRCode extends PrinterCommand {
+  final String data;
+
+  final PosAlign align;
+
+  /// Module size (`1..16`).
+  final int? size;
+
+  /// Error correction level: `48` (L), `49` (M), `50` (Q), `51` (H).
+  final int? correction;
+
+  PrinterCommandQRCode(this.data,
+      {this.align = PosAlign.center, this.size, this.correction});
+
+  factory PrinterCommandQRCode.fromJson(Map<String, dynamic> j) =>
+      PrinterCommandQRCode(
+        j['data'] as String,
+        align: PosAlign.from(j['align']) ?? PosAlign.center,
+        size: j['size'] as int?,
+        correction: j['correction'] as int?,
+      );
+
+  @override
+  PrinterCommandType get type => PrinterCommandType.qrcode;
+
+  @override
+  void print(GenericPrinter printer) => printer.qrcode(
+        data,
+        align: align,
+        size: QRSize((size ?? QRSize.size4.value).clamp(1, 16)),
+        cor: switch (correction) {
+          49 || 1 => QRCorrection.M,
+          50 || 2 => QRCorrection.Q,
+          51 || 3 => QRCorrection.H,
+          _ => QRCorrection.L,
+        },
+      );
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        'data': data,
+        'align': align.name,
+        if (size != null) 'size': size,
+        if (correction != null) 'correction': correction,
+      };
+
+  @override
+  String toString() => '[QR: $data]\n';
 }
