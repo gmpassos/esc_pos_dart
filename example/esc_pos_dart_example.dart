@@ -1,9 +1,8 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:esc_pos_dart/esc_pos_dart.dart';
 import 'package:image/image.dart';
 import 'package:intl/intl.dart';
-import 'package:resource_portable/resource.dart';
 
 Future<void> main(List<String> args) async {
   var ip = args[0];
@@ -60,11 +59,9 @@ Future<bool> printDemoReceipt(NetworkPrinter printer) async {
   print('-----------------------------------------------------------------');
   print('** Printing demo receipt:');
 
-  // Print image
-  final bytes =
-      await Resource('package:esc_pos_dart/resources/rabbit_black.jpg')
-          .readAsBytes();
-  final image = decodeImage(Uint8List.fromList(bytes))!;
+  // Print image (run from the package root):
+  final bytes = await File('lib/resources/rabbit_black.jpg').readAsBytes();
+  final image = decodeImage(bytes)!;
 
   printer.image(image);
 

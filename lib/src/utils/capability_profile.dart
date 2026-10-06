@@ -8,7 +8,7 @@
 
 import 'dart:convert' show json;
 
-import 'package:resource_portable/resource.dart';
+import 'capabilities.dart';
 
 class CodePage {
   CodePage(this.id, this.name);
@@ -23,18 +23,14 @@ class CapabilityProfile {
 
   CapabilityProfile._internal(this.name, this.codePages);
 
-  static Future<Map>? _capabilities;
+  static Map? _capabilities;
 
-  /// The `capabilities.json` (loaded and parsed once).
-  static Future<Map> _loadCapabilities() => _capabilities ??=
-          Resource('package:esc_pos_dart/resources/capabilities.json')
-              .readAsString()
-              .then((content) => json.decode(content) as Map)
-              .catchError((Object e) {
-        // Allow a new attempt:
-        _capabilities = null;
-        throw e;
-      });
+  /// The `capabilities.json` (embedded in [capabilitiesJson], parsed once).
+  ///
+  /// Not loaded through a `package:` URI: `Isolate.resolvePackageUri` is
+  /// unsupported on Flutter apps (issue #10).
+  static Future<Map> _loadCapabilities() async =>
+      _capabilities ??= json.decode(capabilitiesJson) as Map;
 
   /// Public factory
   static Future<CapabilityProfile> load({String name = 'default'}) async {

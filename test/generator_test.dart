@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:esc_pos_dart/esc_pos_dart.dart';
+import 'package:esc_pos_dart/src/utils/capabilities.dart';
 import 'package:esc_pos_dart/src/utils/char_encoder.dart';
 import 'package:image/image.dart';
 import 'package:test/test.dart';
@@ -380,6 +382,12 @@ void main() {
 
       expect(() => CapabilityProfile.load(name: 'no-such-profile'),
           throwsException);
+    });
+
+    test('embedded capabilities == capabilities.json', () {
+      var file = File('lib/resources/capabilities.json');
+      expect(json.decode(capabilitiesJson),
+          equals(json.decode(file.readAsStringSync())));
     });
   });
 

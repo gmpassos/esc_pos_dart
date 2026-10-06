@@ -1,3 +1,10 @@
+## 1.4.1
+
+- `CapabilityProfile`: the capabilities are now embedded in the Dart source instead of loaded from
+  `package:esc_pos_dart/resources/capabilities.json`. Fixes `Unsupported operation: Isolate.resolvePackageUriSync`
+  on Flutter apps (issue #10).
+- Removed dependency: `resource_portable`.
+
 ## 1.4.0
 
 - `DecoderEscPos`:
